@@ -1,0 +1,9 @@
+{
+  "name": "@studio/schemas",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.js",
+  "dependencies": {
+    "zod": "4.6.5"
+  }
+}

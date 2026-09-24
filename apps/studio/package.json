@@ -1,0 +1,14 @@
+{
+  "name": "@studio/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@studio/schemas": "*",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  }
+}

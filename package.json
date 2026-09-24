@@ -1,0 +1,40 @@
+{
+  "name": "book-studio",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "dev:api": "node --env-file=.env --watch apps/api/src/server.js",
+    "dev:studio": "npm run dev --workspace=@studio/web",
+    "test": "vitest run --config vitest.config.js",
+    "test:integration": "node --env-file=.env.test node_modules/vitest/vitest.mjs run --config vitest.integration.config.js",
+    "test:production-db": "node --env-file=.env.production-test node_modules/vitest/vitest.mjs run --config vitest.integration.config.js",
+    "lint": "eslint .",
+    "build": "node scripts/check-server.js && npm run build --workspace=@studio/web",
+    "db:migrate": "node --env-file=.env scripts/migrate.js",
+    "db:setup": "node scripts/setup-local-db.js",
+    "db:fixture": "node --env-file=.env scripts/seed-fixture.js",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.63.0",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.7",
+    "@vitejs/plugin-react": "6.1.1",
+    "eslint": "10.11.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.12.0",
+    "jsdom": "30.1.1",
+    "supertest": "7.3.0",
+    "vite": "8.3.0",
+    "vitest": "5.0.1"
+  }
+}
