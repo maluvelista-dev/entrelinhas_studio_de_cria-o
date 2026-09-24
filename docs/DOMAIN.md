@@ -1,6 +1,6 @@
 # Domínio e banco inicial proposto
 
-Proposta para revisão, sem DDL executado. Alvo local: MariaDB do XAMPP. InnoDB, `utf8mb4`, IDs UUID gerados no Node armazenados em `CHAR(36)`, datas `DATETIME(3)` em UTC. Slugs normalizados em minúsculas com unicidade. Collation explicitada nas migrations; não depender dos defaults do servidor.
+Proposta para revisão, sem DDL executado. Banco da aplicação: MariaDB, fornecido localmente pelo serviço “MySQL” do XAMPP. Produção utilizará MariaDB em versão mantida; migrations precisam ser validadas nos dois ambientes. MySQL 8 não é equivalente ou substituto de teste. InnoDB, `utf8mb4`, IDs UUID gerados no Node armazenados em `CHAR(36)`, datas `DATETIME(3)` em UTC. Slugs normalizados em minúsculas com unicidade. Collation explicitada nas migrations; não depender dos defaults do servidor.
 
 ## Agregados
 

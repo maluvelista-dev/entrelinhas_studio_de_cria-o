@@ -4,6 +4,12 @@
 
 A partir do setup executável: `npm test`, `npm run lint`, `npm run build` e `npm run test:integration`. Scripts raiz devem falhar se um workspace obrigatório falhar. Build cobre Studio e valida imports/sintaxe dos pacotes/API JavaScript sem exigir compilação fictícia. Testes unitários não substituem integração com MariaDB real.
 
+## Política de lint
+
+Configuração enxuta, focada em erros prováveis de JavaScript e uso correto de React/Hooks. Evitar regras cosméticas e limites arbitrários de tamanho ou complexidade sem necessidade demonstrada. Lint não define funcionalidades nem substitui testes de comportamento.
+
+O servidor de desenvolvimento não depende de lint aprovado a cada edição. Executar lint durante o trabalho e exigir ausência de erros no fechamento da fase. Avisos devem ser revisados, sem transformar todo aviso em bloqueio automaticamente. Ajustar regras com justificativa em caso de falso positivo ou necessidade técnica; exceções pontuais devem indicar regra e motivo, sem desativar a análise globalmente.
+
 ## Camadas
 
 | Camada | Ferramenta proposta | Cobertura significativa |
@@ -21,6 +27,8 @@ TDD para lógica quando aplicável: teste demonstrando a regra, implementação 
 
 Banco exclusivo `book_studio_test`, usuário e configuração próprios; runner verifica nome permitido e recusa outros bancos antes de operações destrutivas. Nunca limpar bancos do XAMPP por varredura. Inicialmente serializar testes de integração; usar transações por teste quando possível e fixtures explícitas para cenários com múltiplas conexões. SQLite não substitui MariaDB. Testar migrations desde zero e a partir da versão anterior; DDL exige estratégia de recuperação própria.
 
+Executar a mesma suíte de migrations no MariaDB local, fornecido pelo serviço “MySQL” do XAMPP, e em instância isolada da versão mantida de MariaDB escolhida para produção. Registrar `SELECT VERSION()`, configuração relevante (como sql_mode e collation), migrations executadas e resultados de cada ambiente. MySQL 8 não substitui nenhum desses alvos. Sem acesso ao alvo de teste de produção, o gate permanece pendente. Não executar testes destrutivos na base real de produção.
+
 ## Casos obrigatórios da Fase 1
 
 - Criação atômica de book/versão/ponteiro; slug duplicado; ponteiro para outro livro recusado.
@@ -33,7 +41,8 @@ Banco exclusivo `book_studio_test`, usuário e configuração próprios; runner 
 
 ## Checklist manual da Fase 1
 
-- [ ] Iniciar MySQL no XAMPP e conectar aos bancos exclusivos.
+- [ ] Iniciar MariaDB pelo serviço “MySQL” do XAMPP e conectar aos bancos exclusivos.
+- [ ] Conferir evidências de migrations no MariaDB local e no alvo isolado de produção em versão mantida.
 - [ ] Iniciar API/Studio conforme README futuro; conferir healthcheck.
 - [ ] Criar livro, recarregar e confirmar persistência e acentos.
 - [ ] Editar metadados, adicionar páginas e reordenar sem perder texto.
@@ -51,7 +60,7 @@ Verificações desta entrega: leitura integral da especificação, inspeção de
 
 Checklist de aceite documental:
 
-- [ ] Usuário valida banco do XAMPP, limites dos módulos e proposta de versões.
+- [ ] Usuário valida MariaDB local e alvo de produção, limites dos módulos e proposta de versões.
 - [ ] Usuário revisa dúvidas e riscos de DECISIONS.md.
 - [ ] Usuário aceita escopo e critérios da Fase 1.
 - [ ] Usuário autoriza explicitamente a próxima fase.

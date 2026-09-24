@@ -24,7 +24,7 @@ Nenhuma próxima fase começa sem aprovação explícita. Cada fase termina com 
 
 ### 1. Fundação e conexão
 
-Criar repositório Git e branch `feature/project-foundation`, npm workspaces, React/Vite JavaScript, Express separado entre app e listener, ESLint, Vitest e scripts de qualidade. Fixar dependências e lockfile. Confirmar MariaDB ativo por conexão autenticada, criar bancos exclusivos de desenvolvimento/teste e usuário limitado. Adicionar `.env.example`, pool, configuração validada e healthcheck sem segredos. Escolher e documentar execução de migrations numeradas e proteção do banco de teste.
+Utilizar o repositório Git e a branch `feature/project-foundation` criados na Fase 0; configurar npm workspaces, React/Vite JavaScript, Express separado entre app e listener, ESLint, Vitest e scripts de qualidade. Fixar dependências e lockfile. Confirmar MariaDB local (serviço “MySQL” do XAMPP) ativo por conexão autenticada, criar bancos exclusivos de desenvolvimento/teste e usuário limitado. Adicionar `.env.example`, pool, configuração validada e healthcheck sem segredos. Escolher e documentar execução de migrations numeradas e proteção do banco de teste. Definir versão mantida de MariaDB para produção e instância isolada equivalente para validar migrations; MySQL 8 não é equivalente. Adotar a política enxuta de lint de TESTING.md.
 
 DoD: instalação reproduzível, conexão validada, configuração inválida falha claramente, teste nunca aceita banco de desenvolvimento, lint/build/test executam. Commit sugerido: `chore: configure studio and api workspaces`.
 
@@ -32,7 +32,7 @@ DoD: instalação reproduzível, conexão validada, configuração inválida fal
 
 Criar migrations para tabelas de DOMAIN.md, testar constraints reais e rollback de transações de conteúdo. Criar contratos de repositórios com driver mysql2, SQL parametrizado e tratamento de conflito. Não implementar endpoints públicos nem publicação. Commit sugerido: `feat(api): persist books and working versions`.
 
-DoD: migration em banco limpo e reexecução controlada; nenhum órfão após falha; versão sempre pertence ao livro apontado; erro de unicidade previsível; documentação de recuperação de DDL.
+DoD: migrations em banco limpo, atualização da versão anterior e reexecução controlada validadas tanto no MariaDB local quanto no alvo isolado de produção em versão mantida, com versões e resultados registrados; nenhum órfão após falha; versão sempre pertence ao livro apontado; erro de unicidade previsível; documentação de recuperação de DDL.
 
 ### 3. Book e Page
 

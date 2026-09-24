@@ -1,10 +1,10 @@
-# Decisões e pendências — 23/09/2026
+# Decisões e pendências — atualizado em 24/09/2026
 
-## ADR-001 — Banco do XAMPP
+## ADR-001 — MariaDB local e em produção
 
-Problema: documento original exige PostgreSQL, mas a instrução mais recente exige MySQL do XAMPP.
+Problema: a especificação original mencionava outro banco; a instrução vigente determina MariaDB, fornecido localmente pelo serviço “MySQL” do XAMPP.
 
-Opções: PostgreSQL separado; banco existente do XAMPP. Trade-off: o segundo simplifica o ambiente local, mas requer atenção às diferenças MariaDB/MySQL e à versão de produção. Decisão: seguir o usuário e usar MariaDB encontrado no XAMPP, com driver mysql2. PostgreSQL deixa de ser alvo; não preparar suporte a múltiplos bancos sem necessidade.
+Decisão: MariaDB é o único banco alvo da aplicação, com driver `mysql2`. MySQL 8 e MariaDB não são equivalentes. Reaproveitar MariaDB do XAMPP simplifica o setup local, mas exige testes de compatibilidade com a versão mantida de MariaDB escolhida para produção. Validar migrations nos dois ambientes, usando instância isolada correspondente ao alvo de produção, sem dados reais. Registrar versões, configurações relevantes e resultados. Não declarar compatibilidade com base apenas no teste local.
 
 ## ADR-002 — Monólito modular
 
@@ -24,7 +24,7 @@ Problema: regras gerais pedem test/lint/build em toda fase, mas a seção 38 ped
 
 ## Riscos e inconsistências
 
-- O botão MySQL do XAMPP corresponde ao binário MariaDB 10.4.32 encontrado. Não presumir comportamento idêntico a MySQL 8 ou suporte equivalente na VPS; validar migrations nos dois ambientes efetivamente escolhidos.
+- O serviço “MySQL” do XAMPP fornece MariaDB; o binário encontrado é MariaDB 10.4.32. MySQL 8 não é equivalente. Validar migrations tanto no MariaDB local quanto no alvo MariaDB de produção.
 - A versão local é antiga; selecionar versão mantida para produção e planejar teste de compatibilidade, sem substituir a instalação do usuário nesta fase.
 - Ferramenta interna também precisa de autenticação e controle de acesso antes de ser exposta. Requisito não detalhado na especificação; desenvolvimento inicial restrito a localhost.
 - READY_TO_PUBLISH requer validações que dependem de fases futuras: bloquear transição até implementação completa, sem publicar conteúdo parcialmente validado.
@@ -41,6 +41,6 @@ Problema: regras gerais pedem test/lint/build em toda fase, mas a seção 38 ped
 2. Faixa etária terá limites livres ou categorias fixas? Proposta inicial: mínimo/máximo em anos.
 3. Dimensões de página e política de encaixe serão fixas por livro? Proposta: proporção lógica por livro com coordenadas normalizadas.
 4. Quais limites de upload, formatos de áudio e retenção de livros/assets? Definir antes desses fluxos.
-5. Qual ambiente e versão de MariaDB na VPS? Confirmar antes da implantação.
+5. Qual ambiente e versão mantida de MariaDB na VPS? Definir no setup da Fase 1 para viabilizar a validação das migrations nos dois ambientes; enquanto indefinido, o gate de produção permanece pendente.
 
 Credenciais serão configuradas localmente durante setup; não registrar senhas na documentação ou no chat.

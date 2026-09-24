@@ -4,7 +4,7 @@ Studio interno para produzir livros como dados estruturados e assets. O aplicati
 
 ## Situação atual
 
-Fase 0: proposta técnica documentada, aguardando validação e autorização para a Fase 1. Não há aplicação, dependências instaladas ou migrations executadas. A instrução mais recente do usuário substitui PostgreSQL pelo banco do XAMPP.
+Fase 0: proposta técnica documentada, aguardando validação e autorização para a Fase 1. Não há aplicação, dependências instaladas ou migrations executadas. O banco da aplicação é **MariaDB**, fornecido localmente pelo serviço “MySQL” do XAMPP. Produção utilizará MariaDB em versão mantida. Migrations deverão ser validadas no ambiente local e no alvo de produção. MySQL 8 não é um alvo equivalente.
 
 Ambiente inspecionado em 23/09/2026: Windows, Node 24.18.1, npm 11.16.0, Git 2.55.0; XAMPP em `C:\xampp`, binário MariaDB 10.4.32, configuração na porta 3306 e processo `mysqld` ativo. A conexão autenticada e a versão do servidor em execução ainda precisam ser verificadas. Nenhum banco existente foi alterado.
 

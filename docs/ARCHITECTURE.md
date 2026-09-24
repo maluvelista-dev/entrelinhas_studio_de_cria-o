@@ -41,7 +41,7 @@ React nunca anima frame a frame. GSAP somente dentro do Engine. Dados não execu
 
 ## Desenvolvimento com XAMPP
 
-Usar o serviço denominado **MySQL** no painel do XAMPP. O binário encontrado é MariaDB 10.4.32. A API Node conecta via `mysql2/promise`; PHP não participa do backend. Apache é opcional para administrar o banco com phpMyAdmin. Vite e Express executam como processos Node, fora de `htdocs`.
+O banco da aplicação é **MariaDB**, fornecido localmente pelo serviço **“MySQL”** do XAMPP. O binário encontrado é MariaDB 10.4.32. MySQL 8 e MariaDB não são equivalentes; MySQL 8 não é alvo da aplicação. A API Node conecta via `mysql2/promise` (nome do driver, não do banco adotado); PHP não participa do backend. Apache é opcional para administrar o banco com phpMyAdmin. Vite e Express executam como processos Node, fora de `htdocs`.
 
 Portas propostas: Studio `127.0.0.1:5173`, API `127.0.0.1:3000`, banco `127.0.0.1:3306`. Vite encaminha `/api` para Express. Validar ocupação das portas antes do setup.
 
@@ -49,7 +49,7 @@ Na Fase 1: confirmar conexão e `SELECT VERSION()`, criar banco exclusivo `book_
 
 ## VPS
 
-Linux com reverse proxy e TLS, build estático do Studio, processo Node supervisionado, MariaDB em rede privada e filesystem persistente. Usar uma versão mantida do MariaDB, validando migrations e testes também no alvo de produção. Não instalar o pacote XAMPP na VPS como estratégia de produção. Autenticação e autorização internas precisam existir antes de acesso remoto da equipe; a Fase 1 permanece local até essa decisão.
+Linux com reverse proxy e TLS, build estático do Studio, processo Node supervisionado, MariaDB em rede privada e filesystem persistente. Produção deverá utilizar MariaDB em versão mantida. Validar migrations e testes de integração tanto no MariaDB local quanto em instância isolada com a versão e configuração relevantes do MariaDB alvo de produção. Registrar versões e resultados: aprovação apenas local não satisfaz esse gate. Não instalar o pacote XAMPP na VPS como estratégia de produção. Autenticação e autorização internas precisam existir antes de acesso remoto da equipe; a Fase 1 permanece local até essa decisão.
 
 ## Storage e publicação
 
@@ -67,7 +67,7 @@ Fase 2: PixiJS; GSAP na primeira animação executável. Playwright ao surgir fl
 
 ## Referências verificadas
 
-- [XAMPP para Windows](https://www.apachefriends.org/faq_windows.html): distribuição e identificação MySQL/MariaDB.
+- [XAMPP para Windows](https://www.apachefriends.org/faq_windows.html): MariaDB fornecido pelo serviço “MySQL” do XAMPP.
 - [MariaDB JSON](https://mariadb.com/docs/server/reference/data-types/string-data-types/json): diferenças em relação ao JSON nativo MySQL; não assumir JSONB.
 - [mysql2](https://sidorares.github.io/node-mysql2/docs/documentation): driver e prepared statements.
 - [Node](https://nodejs.org/en/about/previous-releases), [Vite](https://vite.dev/guide/) e [Vitest](https://vitest.dev/guide/migration/): conferir compatibilidade ao fixar versões.
