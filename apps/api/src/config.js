@@ -9,7 +9,15 @@ export function readConfig(env = process.env) {
   if (![port, apiPort].every(value => Number.isInteger(value) && value > 0 && value <= 65535)) {
     throw new Error('Porta inválida na configuração.');
   }
-  return { database: { host: env.DB_HOST, port, database: env.DB_NAME,
+  const secureCookies = env.NODE_ENV === 'production';
+  const origins = env.APP_ORIGIN ? [env.APP_ORIGIN] : ['http://127.0.0.1:5173', 'http://localhost:5173'];
+  for (const origin of origins) {
+    const url = new URL(origin);
+    if (url.origin !== origin || (secureCookies && url.protocol !== 'https:')) {
+      throw new Error('APP_ORIGIN deve ser uma origem exata; produção exige HTTPS.');
+    }
+  }
+  return { security: { origins, secureCookies }, database: { host: env.DB_HOST, port, database: env.DB_NAME,
     user: env.DB_USER, password: env.DB_PASSWORD },
     apiPort, storageRoot: path.resolve(env.STORAGE_ROOT || 'storage') };
 }

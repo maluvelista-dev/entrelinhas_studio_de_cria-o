@@ -26,9 +26,10 @@ export function pageDto(row) {
 export async function detail(connection, id) {
   const book = await findBook(connection, id);
   const [pages] = await connection.execute('SELECT * FROM pages WHERE book_version_id = ? ORDER BY position', [book.version_id]);
-  const [history] = await connection.execute(`SELECT id, from_status AS fromStatus, to_status AS toStatus,
-    actor_id AS actorId, comment, created_at AS createdAt FROM book_status_history
-    WHERE book_version_id = ? ORDER BY created_at, id`, [book.version_id]);
+  const [history] = await connection.execute(`SELECT h.id, h.from_status AS fromStatus, h.to_status AS toStatus,
+    h.actor_id AS actorId, u.display_name AS actorName, h.comment, h.created_at AS createdAt
+    FROM book_status_history h LEFT JOIN users u ON u.id = h.actor_id
+    WHERE h.book_version_id = ? ORDER BY h.created_at, h.id`, [book.version_id]);
   return {
     id: book.id, slug: book.slug, title: book.title, description: book.description,
     ageRange: book.age_min === null ? null : { min: book.age_min, max: book.age_max },

@@ -5,7 +5,7 @@ import { createApp } from './http/app.js';
 const config = readConfig();
 const pool = createPool(config.database);
 const storage = new FilesystemStorage(config.storageRoot);
-const server = createApp({ pool, storage }).listen(config.apiPort, '127.0.0.1', () => {
+const server = createApp({ pool, storage, security: config.security }).listen(config.apiPort, '127.0.0.1', () => {
   console.log(`API local: http://127.0.0.1:${config.apiPort}`);
 });
 async function stop() {

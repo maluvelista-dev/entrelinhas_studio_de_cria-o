@@ -59,15 +59,15 @@ export function createBookService(pool, storage) {
         }
       });
     },
-    transition(id, raw) {
+    transition(id, raw, actorId) {
       const input = transitionSchema.parse(raw);
       return mutate(id, input.revision, async (connection, book) => {
         assertTransition(book.status, input.status);
         await connection.execute('UPDATE book_versions SET status = ? WHERE id = ?', [input.status, book.version_id]);
         await connection.execute(`INSERT INTO book_status_history
           (id, book_version_id, from_status, to_status, actor_id, comment, created_at)
-          VALUES (?, ?, ?, ?, NULL, ?, UTC_TIMESTAMP(3))`,
-          [randomUUID(), book.version_id, book.status, input.status, input.comment || null]);
+          VALUES (?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(3))`,
+          [randomUUID(), book.version_id, book.status, input.status, actorId, input.comment || null]);
       }, false);
     },
   };
