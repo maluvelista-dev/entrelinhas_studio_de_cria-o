@@ -21,7 +21,8 @@
     "db:migrate": "node --env-file=.env scripts/migrate.js",
     "db:setup": "node scripts/setup-local-db.js",
     "db:fixture": "node --env-file=.env scripts/seed-fixture.js",
-    "test:e2e": "playwright test"
+    "test:e2e": "npm run build && node --env-file=.env.test node_modules/@playwright/test/cli.js test",
+    "auth:bootstrap": "node --env-file=.env scripts/bootstrap-admin.js"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

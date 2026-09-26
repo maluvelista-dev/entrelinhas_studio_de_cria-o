@@ -12,6 +12,10 @@ export default [
     rules: { 'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }] },
   },
   {
+    files: ['tests/e2e/**/*.js'],
+    languageOptions: { globals: globals.browser },
+  },
+  {
     files: ['apps/studio/**/*.{js,jsx}'],
     languageOptions: { globals: globals.browser },
     plugins: { 'react-hooks': hooks },
