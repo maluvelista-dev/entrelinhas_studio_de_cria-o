@@ -1,9 +1,15 @@
+import { Toast } from './components/ui/Toast.jsx';
+import { Button } from './components/ui/Button.jsx';
 import { useCallback, useEffect, useState } from "react";
-import { statusLabels } from "@studio/schemas";
+import { BookOpen, LibraryBig, Users, Shapes, Sparkles, PencilLine, ClipboardCheck, Plus, ArrowLeft } from 'lucide-react';
+import { BookCard } from './components/BookCard.jsx';
+import { EmptyState } from './components/ui/EmptyState.jsx';
+import { Skeleton } from './components/ui/Skeleton.jsx';
 import { api } from "./api.js";
 import { BookForm } from "./components/BookForm.jsx";
 import { BookEditor } from "./components/BookEditor.jsx";
 import { Library } from "./components/Library.jsx";
+import { EnginePreview } from "./components/EnginePreview.jsx";
 import { AccessManagement } from "./components/AccessManagement.jsx";
 
 export function App({ user, onLogout }) {
@@ -123,7 +129,7 @@ export function App({ user, onLogout }) {
             navigate("books");
           }}
         >
-          <span className="brand-mark">e.</span>
+          <span className="brand-mark"><BookOpen aria-hidden="true" size={26} /></span>
           <span>
             entrelinhas<small>STUDIO CRIATIVO</small>
           </span>
@@ -135,16 +141,17 @@ export function App({ user, onLogout }) {
             disabled={busy}
             onClick={() => navigate("books")}
           >
-            <span>▤</span> Meus livros <b>{books.length}</b>
+            <BookOpen aria-hidden="true" size={20} /> Meus livros <b>{books.length}</b>
           </button>
           <button
             className={section === "library" ? "active" : ""}
             disabled={busy}
             onClick={() => navigate("library")}
           >
-            <span>✳</span> Biblioteca <b>{items.length}</b>
+            <LibraryBig aria-hidden="true" size={20} /> Biblioteca <b>{items.length}</b>
           </button>
-          {can("users:manage") && <button className={section === "access" ? "active" : ""} disabled={busy} onClick={() => navigate("access")}><span>⚿</span> Acessos</button>}
+          {can("users:manage") && <button className={section === "access" ? "active" : ""} disabled={busy} onClick={() => navigate("access")}><Users aria-hidden="true" size={20} /> Acessos</button>}
+          <button className={section === "engine" ? "active" : ""} disabled={busy} onClick={() => navigate("engine")}><Shapes aria-hidden="true" size={20} /> Visualização</button>
         </nav>
         <div className="sidebar-note">
           <span>
@@ -156,7 +163,7 @@ export function App({ user, onLogout }) {
             Um lugar para dar vida
             <br />à imaginação.
           </p>
-          <div className="orbit">✦</div>
+          <div className="orbit"><Sparkles aria-hidden="true" size={32} /></div>
         </div>
         <div className="workspace">
           <span className="workspace-avatar">E</span>
@@ -170,9 +177,9 @@ export function App({ user, onLogout }) {
         <header className="topbar">
           <span>
             Workspace <span className="breadcrumb">/</span>{" "}
-            {section === "books" ? "Meus livros" : section === "access" ? "Acessos" : "Biblioteca"}
+            {section === "books" ? "Meus livros" : section === "access" ? "Acessos" : section === "engine" ? "Visualização" : "Biblioteca"}
           </span>
-          <div className="topbar-account"><span className="local-label">● Studio interno</span><button className="back-link" disabled={busy} onClick={async () => { if (!canNavigate()) return; try { await onLogout(); } catch (failure) { setError(failure); } }}>Sair</button></div>
+          <div className="topbar-account"><span className="local-label">Studio interno</span><button className="back-link" disabled={busy} onClick={async () => { if (!canNavigate()) return; try { await onLogout(); } catch (failure) { setError(failure); } }}>Sair</button></div>
         </header>
         <div className="main-content">
           <div className="page-heading">
@@ -181,16 +188,16 @@ export function App({ user, onLogout }) {
               <h1>
                 {section === "books"
                   ? "Suas histórias começam aqui."
-                  : section === "access" ? "Cada pessoa, o acesso certo." : "Um universo de possibilidades."}
+                  : section === "engine" ? "As primeiras formas da história." : section === "access" ? "Cada pessoa, o acesso certo." : "Um universo de possibilidades."}
               </h1>
               <p>
                 {section === "books"
                   ? "Crie, organize e prepare seus livros para ganhar o mundo."
-                  : section === "access" ? "Gerencie os perfis e as contas da sua equipe." : "Personagens, cenários e elementos que conectam suas histórias."}
+                  : section === "engine" ? "Confira a renderização e as proporções da cena de validação." : section === "access" ? "Gerencie os perfis e as contas da sua equipe." : "Personagens, cenários e elementos que conectam suas histórias."}
               </p>
             </div>
             {section === "books" && can("books:write") && (
-              <button
+              <Button
                 className="button"
                 disabled={busy || loading}
                 onClick={() => {
@@ -202,8 +209,8 @@ export function App({ user, onLogout }) {
                   }
                 }}
               >
-                + Novo livro
-              </button>
+                <Plus aria-hidden="true" size={18} /> Novo livro
+              </Button>
             )}
           </div>
           {error && (
@@ -216,7 +223,7 @@ export function App({ user, onLogout }) {
                   </small>
                 ))}
               </div>
-              <button
+              <Button
                 className="button secondary"
                 disabled={busy}
                 onClick={async () => {
@@ -237,18 +244,16 @@ export function App({ user, onLogout }) {
                 }}
               >
                 Recarregar
-              </button>
+              </Button>
             </div>
           )}
           {notice && (
-            <p role="status" className="success-notice">
-              ✓ {notice}
-            </p>
+            <Toast onDismiss={() => setNotice('')}>{notice}</Toast>
           )}
           {loading ? (
-            <div className="panel loading" role="status">
-              Carregando seu espaço de criação…
-            </div>
+            <Skeleton />
+          ) : section === "engine" ? (
+            <EnginePreview />
           ) : section === "access" ? (
             <AccessManagement user={user} />
           ) : section === "library" ? (
@@ -266,14 +271,14 @@ export function App({ user, onLogout }) {
             <>
               <div className="stats">
                 <div>
-                  <span className="stat-icon">▤</span>
+                  <span className="stat-icon"><BookOpen aria-hidden="true" size={24} /></span>
                   <div>
                     <strong>{books.length}</strong>
                     <span>Livros no Studio</span>
                   </div>
                 </div>
                 <div>
-                  <span className="stat-icon peach">✎</span>
+                  <span className="stat-icon peach"><PencilLine aria-hidden="true" size={24} /></span>
                   <div>
                     <strong>
                       {books.filter((item) => item.status === "DRAFT").length}
@@ -282,7 +287,7 @@ export function App({ user, onLogout }) {
                   </div>
                 </div>
                 <div>
-                  <span className="stat-icon lilac">✓</span>
+                  <span className="stat-icon lilac"><ClipboardCheck aria-hidden="true" size={24} /></span>
                   <div>
                     <strong>
                       {books.filter((item) => item.status === "REVIEW").length}
@@ -320,7 +325,7 @@ export function App({ user, onLogout }) {
                       }
                     }}
                   >
-                    ← Todos os livros
+                    <ArrowLeft aria-hidden="true" size={16} /> Todos os livros
                   </button>
                   <BookEditor
                     permissions={user.permissions}
@@ -382,72 +387,13 @@ export function App({ user, onLogout }) {
                     </label>
                   </div>
                   {!visibleBooks.length ? (
-                    <div className="empty">
-                      <div className="book-illustration">
-                        <div className="book-back" />
-                        <div className="book-front">
-                          <span>
-                            Era
-                            <br />
-                            uma
-                            <br />
-                            <em>vez.</em>
-                          </span>
-                          <i>✦</i>
-                        </div>
-                        <b>✦</b>
-                      </div>
-                      <h3>
-                        {books.length
-                          ? "Nenhuma história encontrada"
-                          : "A próxima grande história é sua"}
-                      </h3>
-                      <p>
-                        {books.length
-                          ? "Tente buscar por outro título."
-                          : "Sua estante ainda está vazia. Comece com uma ideia, um título e uma primeira página."}
-                      </p>
-                      {!books.length && can("books:write") && (
-                        <button
-                          className="button secondary"
-                          onClick={() => setCreating(true)}
-                        >
-                          Criar meu primeiro livro →
-                        </button>
-                      )}
-                    </div>
+                    <EmptyState title={books.length ? 'Nenhuma história encontrada' : 'A próxima grande história é sua'} description={books.length ? 'Tente buscar por outro título.' : 'Sua estante ainda está vazia. Comece com uma ideia, um título e uma primeira página.'}>
+                      {!books.length && can('books:write') && <Button className="button secondary" onClick={() => setCreating(true)}>Criar meu primeiro livro</Button>}
+                    </EmptyState>
                   ) : (
                     <div className="book-grid">
                       {visibleBooks.map((item, index) => (
-                        <button
-                          className="book-card"
-                          key={item.id}
-                          disabled={busy}
-                          onClick={() => openBook(item.id)}
-                        >
-                          <div className={"book-cover cover-" + (index % 4)}>
-                            <span className="cover-kicker">
-                              ENTRELINHAS · HISTÓRIAS
-                            </span>
-                            <strong>{item.title}</strong>
-                            <span className="cover-star">✳</span>
-                            <small>Versão {item.version}</small>
-                          </div>
-                          <div className="book-card-details">
-                            <span
-                              className={"badge " + item.status.toLowerCase()}
-                            >
-                              {statusLabels[item.status]}
-                            </span>
-                            <h3>{item.title}</h3>
-                            <p>
-                              {item.pageCount} páginas ·{" "}
-                              {new Date(item.updatedAt).toLocaleDateString(
-                                "pt-BR",
-                              )}
-                            </p>
-                          </div>
-                        </button>
+                        <BookCard key={item.id} book={item} index={index} busy={busy} onOpen={openBook} />
                       ))}
                     </div>
                   )}
@@ -457,7 +403,7 @@ export function App({ user, onLogout }) {
           )}
           <footer>
             Feito para imaginar. Organizado para criar.
-            <span>Entrelinhas Studio · Fase 1</span>
+            <span>Entrelinhas Studio · Fase 2</span>
           </footer>
         </div>
       </main>

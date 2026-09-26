@@ -1,3 +1,6 @@
+import { Button } from './ui/Button.jsx';
+import { ArrowUp, ArrowDown, Plus } from 'lucide-react';
+import { StatusBadge } from './ui/StatusBadge.jsx';
 import { useState } from "react";
 import { emptyPage, statusLabels } from "@studio/schemas";
 import { BookForm } from "./BookForm.jsx";
@@ -30,9 +33,9 @@ function PageForm({ page, busy, onSave, onDirty }) {
         />
       </label>
       <div className="form-actions">
-        <button className="button" disabled={busy}>
+        <Button className="button" disabled={busy}>
           {busy ? "Salvando…" : "Salvar página"}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -72,9 +75,7 @@ export function BookEditor({
     <section className="editor panel">
       <div className="editor-title">
         <div>
-          <span className={"badge " + book.status.toLowerCase()}>
-            {statusLabels[book.status]}
-          </span>
+          <StatusBadge status={book.status} />
           <h2>{book.title}</h2>
           <p>
             /{book.slug} · Versão {book.version} · {book.pages.length} páginas
@@ -154,7 +155,7 @@ export function BookEditor({
                     }
                     onClick={() => move(index, -1)}
                   >
-                    ↑
+                    <ArrowUp aria-hidden="true" size={16} />
                   </button>
                   <button
                     aria-label={"Mover página " + item.position + " para baixo"}
@@ -166,18 +167,18 @@ export function BookEditor({
                     }
                     onClick={() => move(index, 1)}
                   >
-                    ↓
+                    <ArrowDown aria-hidden="true" size={16} />
                   </button>
                 </div>
               </div>
             ))}
-            <button
+            <Button
               className="button secondary full"
               disabled={busy || !canEdit || book.status !== "DRAFT"}
               onClick={() => change(() => onPage(emptyPage()))}
             >
-              + Adicionar página
-            </button>
+              <Plus aria-hidden="true" size={16} /> Adicionar página
+            </Button>
           </aside>
           <div className="page-content">
             {page ? (
@@ -225,7 +226,7 @@ export function BookEditor({
               onChange={(event) => setComment(event.target.value)}
             />
           </label>
-          <button
+          <Button
             className="button"
             disabled={
               busy ||
@@ -244,7 +245,7 @@ export function BookEditor({
             {book.status === "REVIEW"
               ? "Devolver a rascunho"
               : "Enviar para revisão"}
-          </button>
+          </Button>
           <p className="notice">
             A publicação estará disponível após a implementação das validações
             editoriais.

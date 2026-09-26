@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { Button } from './ui/Button.jsx';
+import { useId, useState } from "react";
 export function BookForm({
   book,
   assets = [],
@@ -7,6 +8,7 @@ export function BookForm({
   onDirty = () => {},
   onCancel,
 }) {
+  const errorId = useId();
   const [title, setTitle] = useState(book?.title || "");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState(book?.description || "");
@@ -40,11 +42,7 @@ export function BookForm({
       onChange={() => onDirty(true)}
       className="form-stack"
     >
-      {validation && (
-        <p role="alert" className="inline-error">
-          {validation}
-        </p>
-      )}
+
       <label>
         Título do livro
         <input
@@ -88,6 +86,8 @@ export function BookForm({
           Idade mínima
           <input
             type="number"
+            aria-invalid={Boolean(validation)}
+            aria-describedby={validation ? errorId : undefined}
             min="0"
             max="18"
             value={min}
@@ -99,6 +99,8 @@ export function BookForm({
           Idade máxima
           <input
             type="number"
+            aria-invalid={Boolean(validation)}
+            aria-describedby={validation ? errorId : undefined}
             min="0"
             max="18"
             value={max}
@@ -107,6 +109,11 @@ export function BookForm({
           />
         </label>
       </div>
+      {validation && (
+        <p id={errorId} role="alert" className="inline-error">
+          {validation}
+        </p>
+      )}
       <label>
         Asset de capa
         <select
@@ -133,13 +140,13 @@ export function BookForm({
       </label>
       <div className="form-actions">
         {onCancel && (
-          <button type="button" className="button secondary" onClick={onCancel}>
+          <Button type="button" className="button secondary" onClick={onCancel}>
             Cancelar
-          </button>
+          </Button>
         )}
-        <button className="button" disabled={busy}>
+        <Button className="button" disabled={busy}>
           {busy ? "Salvando…" : book ? "Salvar alterações" : "Criar livro"}
-        </button>
+        </Button>
       </div>
     </form>
   );

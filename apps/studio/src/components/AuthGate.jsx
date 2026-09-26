@@ -1,3 +1,5 @@
+import { Button } from './ui/Button.jsx';
+import { BookOpen } from 'lucide-react';
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../api.js";
 import { App } from "../App.jsx";
@@ -62,7 +64,7 @@ export function AuthGate() {
   return (
     <main className="login-shell">
       <section className="panel login-card">
-        <span className="brand-mark">e.</span>
+        <span className="brand-mark"><BookOpen aria-hidden="true" size={26} /></span>
         <p className="eyebrow">ENTRELINHAS · STUDIO INTERNO</p>
         <h1>Bem-vindo ao seu espaço de criação.</h1>
         <p className="muted">
@@ -97,9 +99,9 @@ export function AuthGate() {
               onChange={(event) => setPassword(event.target.value)}
             />
           </label>
-          <button className="button" disabled={busy}>
+          <Button className="button" disabled={busy}>
             {busy ? "Entrando…" : "Entrar"}
-          </button>
+          </Button>
         </form>
       </section>
     </main>

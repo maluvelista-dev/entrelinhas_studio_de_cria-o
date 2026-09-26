@@ -1,4 +1,7 @@
+import { Button } from './ui/Button.jsx';
+import { BookOpen, UserRound, Shapes, Trees, AudioLines } from 'lucide-react';
 import { useState } from "react";
+const icons = { CHARACTER: UserRound, OBJECT: Shapes, BACKGROUND: Trees, AUDIO: AudioLines };
 const labels = {
   CHARACTER: "Personagem",
   OBJECT: "Objeto",
@@ -101,9 +104,9 @@ export function Library({
                 ))}
               </select>
             </label>
-            <button className="button" disabled={busy}>
+            <Button className="button" disabled={busy}>
               {busy ? "Cadastrando…" : "Cadastrar elemento"}
-            </button>
+            </Button>
           </form>
         </fieldset>
         {!canWrite && (
@@ -122,7 +125,7 @@ export function Library({
         </div>
         {!items.length ? (
           <div className="empty small">
-            <span className="empty-mark">✳</span>
+            <span className="empty-mark"><BookOpen aria-hidden="true" size={40} /></span>
             <h3>Um universo para criar</h3>
             <p>Cadastre seu primeiro personagem, objeto, cenário ou áudio.</p>
           </div>
@@ -131,7 +134,7 @@ export function Library({
             {items.map((item) => (
               <li key={item.id}>
                 <span className="asset-symbol">
-                  {labels[item.kind].slice(0, 1)}
+                  {(() => { const Icon = icons[item.kind]; return <Icon aria-hidden="true" size={20} />; })()}
                 </span>
                 <div>
                   <strong>{item.name}</strong>
