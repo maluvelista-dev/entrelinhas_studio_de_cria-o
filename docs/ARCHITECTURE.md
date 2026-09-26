@@ -1,4 +1,4 @@
-# Arquitetura — Fase 1
+# Arquitetura — Fases 1 e 2
 
 ## Princípios e limites
 
@@ -73,3 +73,9 @@ Fase 2: PixiJS; GSAP na primeira animação executável. Playwright adicionado n
 - [MariaDB JSON](https://mariadb.com/docs/server/reference/data-types/string-data-types/json): diferenças em relação ao JSON nativo MySQL; não assumir JSONB.
 - [mysql2](https://sidorares.github.io/node-mysql2/docs/documentation): driver e prepared statements.
 - [Node](https://nodejs.org/en/about/previous-releases), [Vite](https://vite.dev/guide/) e [Vitest](https://vitest.dev/guide/migration/): conferir compatibilidade ao fixar versões.
+
+## Engine mínimo implementado
+
+@studio/engine exporta matemática/interpretação separadas de ./renderer (PixiJS) e ./example (dados de validação). @studio/schemas/scene é um contrato separado de pageDocumentSchema; não altera a persistência existente. Origem superior esquerda, X direita/Y baixo, radianos, pivot relativo à dimensão local; position normalizada e offset relativo usam dimensões do parent ou da cena. Transformações world acumulam ancestors; resize aplica contain ao viewport sem alterar o documento.
+
+React cria/destrói o renderer em effect, observa resize e mostra estado de carregamento/erro. Não controla frames. O renderer estático não inicia ticker. Formas vetoriais não precisam de carregamento de assets; AssetManager/cache e GSAP ficam para a primeira integração correspondente. Mais detalhes em PHASE_2.md.

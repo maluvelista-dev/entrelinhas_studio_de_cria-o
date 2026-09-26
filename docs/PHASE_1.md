@@ -1,6 +1,6 @@
 # Fase 1 — entrega e aceite
 
-Autorizada pelo usuário em 24/09/2026, após aprovação da Fase 0. Implementação disponível para aceite; Fase 2 não iniciada.
+Autorizada pelo usuário em 24/09/2026, após aprovação da Fase 0. Entrega aceita pelo usuário após testes manuais em 26/09/2026; Fase 2 autorizada na sequência. O checklist abaixo preserva o roteiro apresentado, sem inferir execução individual de cada item.
 
 ## Implementado
 

@@ -60,3 +60,11 @@ Nome Entrelinhas é provisório de interface. Faixa etária inicial limitada a 0
 Ampliação autorizada em 26/09/2026: sessões opacas revogáveis no MariaDB, cookie HttpOnly/SameSite, hashes scrypt e autorização por ação no backend. Rotas internas são privadas por padrão, com schemas estritos e serializers por lista de campos permitidos. Administração de contas apenas para ADMIN; EDITOR produz e envia para revisão; REVIEWER consulta e devolve a rascunho. Sem token em JSON/localStorage.
 
 Acesso inicial via bootstrap local que recusa contas existentes. Mudanças de perfil, desativação e senha revogam sessões. Compartilhamento interno de livros é explícito; não prometer isolamento por livro ainda inexistente. Defesa adicional no Vite limita arquivos servidos e bloqueia .env/.local/API. Detalhes, limites e referências em SECURITY.md.
+
+## ADR-008 — Engine mínimo isolado e contrato de validação
+
+Fase 2 autorizada: PixiJS 8.21.0, sem GSAP até haver animação executável. Cenas estritas de retângulos/elipses, coordenadas lógicas independentes do viewport, hierarquia e pivot relativo. Rotação em radianos e matrizes afins puras, com inversão explicitamente recusada para transform singular. Os livros persistidos mantêm entities vazio até evolução do contrato com editor de cenas; não aceitar dados que a interface ainda não produz. Renderer estático carrega sob demanda e libera recursos ao desmontar. Referências: [Application](https://pixijs.com/8.x/guides/components/application) e [Graphics](https://pixijs.com/8.x/guides/components/scene-objects/graphics).
+
+## ADR-009 — Tema A como norma visual
+
+Design System entregue durante a Fase 2 passa a reger interfaces existentes e futuras. Tokens, Inter local, Lucide e componentes reutilizáveis substituem o visual editorial verde anterior. A especificação funcional prevalece sobre exemplos ilustrativos de telas futuras: sem wizard vazio, upload fictício, publicação ou editores antecipados. Detalhes e escolhas de contraste em DESIGN_IMPLEMENTATION.md. Canvas/timeline escuros podem ser avaliados nas Fases 4–7, sem dark mode global agora.

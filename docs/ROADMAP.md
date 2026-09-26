@@ -5,8 +5,8 @@ Nenhuma próxima fase começa sem aprovação explícita. Cada fase termina com 
 | Fase | Entrega | Critério principal |
 | --- | --- | --- |
 | 0 — aprovada | Discovery, arquitetura e propostas documentadas | Revisão de consistência e aceite do usuário |
-| 1 — em aceite | Setup, Library, Book, Page, workflow inicial | Persistência real, regras testadas, UI mínima e gates verdes |
-| 2 | Engine mínimo e coordenadas | Cena interpretada, transforms testados e render validado |
+| 1 — aprovada | Setup, Library, Book, Page, workflow inicial | Persistência real, regras testadas, UI mínima e gates verdes |
+| 2 — em aceite | Engine mínimo e coordenadas | Cena interpretada, transforms testados e render validado |
 | 3 | Character system | Hierarquia, pivots e anchors consistentes |
 | 4 | Animation Playground | DummyCharacter, inspector, debug, presets, reset e export JSON |
 | 5 | Poses, keyframes e presets | Interpolação e compatibilidade verificadas |
@@ -22,7 +22,7 @@ Nenhuma próxima fase começa sem aprovação explícita. Cada fase termina com 
 
 ## Fase 1 — autorizada em 24/09/2026
 
-Implementação entregue para aceite. O plano abaixo registra os critérios aprovados; resultados e checklist estão em [PHASE_1.md](PHASE_1.md).
+Entrega aceita pelo usuário após testes manuais em 26/09/2026. O plano abaixo registra os critérios aprovados; resultados e checklist estão em [PHASE_1.md](PHASE_1.md).
 
 ### 1. Fundação e conexão
 
@@ -63,3 +63,7 @@ DoD: checklist manual executado, testes unitários/integração/componentes pert
 ## Exclusões da Fase 1
 
 Sem PixiJS/GSAP até o Engine, editor gráfico, importador de character packs, playback, publicação real, endpoints públicos, PDF/vídeo, mobile ou cobrança. Autenticação, perfis e serializers foram incluídos por solicitação explícita do usuário nesta fase. Uso remoto continua dependendo de revisão de implantação.
+
+## Fase 2 — autorizada em 26/09/2026
+
+Engine mínimo, coordenadas e visualização implementados, com Tema A aplicado por solicitação adicional do usuário. Evidências, limites e checklist em [PHASE_2.md](PHASE_2.md). Design System obrigatório em [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md), aplicação em [DESIGN_IMPLEMENTATION.md](DESIGN_IMPLEMENTATION.md). Fase 3 depende do aceite desta entrega e autorização.

@@ -69,8 +69,22 @@ Checklist de aceite documental:
 - [ ] Usuário aceita escopo e critérios da Fase 1.
 - [ ] Usuário autoriza explicitamente a próxima fase.
 
-Fase 0 aprovada pelo usuário em 24/09/2026; Fase 1 autorizada na mesma sessão. Os itens acima registram o processo documental original. Fase 2 continua sem autorização.
+Fase 0 aprovada pelo usuário em 24/09/2026; Fase 1 autorizada na mesma sessão. Os itens acima registram o processo documental original. Fase 2 foi posteriormente autorizada em 26/09/2026; consulte PHASE_2.md.
 
 ## Segurança adicionada à Fase 1
 
 Consultar SECURITY.md. Gates incluem permissões por perfil, parâmetros estritos, serialização aninhada sem campos sensíveis, sessões expiradas/revogadas, Origin, cookies, hash de senha e limiter de login. O teste de servidor Vite usa sentinela sintética para verificar bloqueio de arquivos privados. A migration 003 é validada nos dois MariaDB. O E2E usa credenciais aleatórias de teste e cobre administrador/revisor.
+
+## Fase 2 e Tema A
+
+Resultados em [PHASE_2.md](PHASE_2.md). Testes puros cobrem coordenadas, hierarquia e parsing. E2E verifica pixels WebGL reais, resize, liberação de canvas e telas nas três resoluções desktop. O teste visual usa dados exclusivos de teste.
+
+Para manter o Studio de desenvolvimento aberto durante E2E, use em PowerShell:
+
+```powershell
+$env:E2E_API_PORT = "3100"
+$env:E2E_STUDIO_PORT = "5273"
+npm.cmd run test:e2e
+```
+
+Esses servidores continuam exclusivos, com reuseExistingServer=false e credenciais de .env.test. As variáveis mudam somente as portas do E2E; não mudam o banco permitido. Integração local e E2E não devem executar simultaneamente porque compartilham o banco de testes.

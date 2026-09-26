@@ -66,3 +66,7 @@ Não executar integração contra dados reais: os testes recriam tabelas apenas 
 ## Processo
 
 Ler a documentação antes de cada etapa. Commits pequenos, testes, lint, build, regressão e aceite manual antes de avançar. JavaScript obrigatório. Engine/PixiJS/GSAP serão introduzidos nas fases próprias; mobile, pagamentos, publicação e exportação não fazem parte desta entrega.
+
+## Engine e identidade visual
+
+A fase 2 está disponível para aceite em [docs/PHASE_2.md](docs/PHASE_2.md). Após login, Visualização abre a cena de validação do Engine. O Tema A rege as telas existentes conforme [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md). Para rodar E2E sem encerrar os servidores locais, veja as portas alternativas em [docs/TESTING.md](docs/TESTING.md).
