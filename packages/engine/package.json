@@ -1,0 +1,14 @@
+{
+  "name": "@studio/engine",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./renderer": "./src/renderer.js",
+    "./example": "./examples/validation-scene.js"
+  },
+  "dependencies": {
+    "@studio/schemas": "*",
+    "pixi.js": "8.21.0"
+  }
+}
