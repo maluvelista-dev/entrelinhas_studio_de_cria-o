@@ -37,10 +37,26 @@ Problema: regras gerais pedem test/lint/build em toda fase, mas a seção 38 ped
 
 ## Dúvidas para validar antes das funcionalidades afetadas
 
-1. Quem usará o Studio e como será o login/perfil editorial? Bloqueia acesso remoto, não a documentação atual.
+1. Login/perfis implementados a pedido do usuário em 26/09/2026: administrador, editor e revisor. Livros compartilhados pela equipe; segregação por livro e MFA/SSO permanecem possíveis evoluções.
 2. Faixa etária terá limites livres ou categorias fixas? Proposta inicial: mínimo/máximo em anos.
 3. Dimensões de página e política de encaixe serão fixas por livro? Proposta: proporção lógica por livro com coordenadas normalizadas.
 4. Quais limites de upload, formatos de áudio e retenção de livros/assets? Definir antes desses fluxos.
-5. Qual ambiente e versão mantida de MariaDB na VPS? Definir no setup da Fase 1 para viabilizar a validação das migrations nos dois ambientes; enquanto indefinido, o gate de produção permanece pendente.
+5. Banco alvo definido na Fase 1: MariaDB 11.4 LTS, patch testado 11.4.13. A versão foi validada em instância isolada; a VPS Linux e sua configuração operacional continuam pendentes de implantação.
 
 Credenciais serão configuradas localmente durante setup; não registrar senhas na documentação ou no chat.
+
+## ADR-006 — Implementação da Fase 1
+
+Autorizada em 24/09/2026. MariaDB 11.4 LTS escolhido como série mantida para produção; testes locais em 10.4.32 e alvo isolado 11.4.13. Evidências e fontes em DATABASE.md.
+
+Runner próprio de migrations limitado a DDL simples: checksum, lock e registro running/complete. Falha parcial interrompe o avanço e exige reparo explícito. Aplicação usa usuário DML separado do migrator.
+
+ESLint 10 com análise JSX nativa e plugin Hooks compatível; sem regra cosmética bloqueante. Playwright foi adicionado porque o fluxo crítico de produção editorial já existe na Fase 1. E2E usa build estático, evitando interferência de HMR durante alterações de arquivos.
+
+Nome Entrelinhas é provisório de interface. Faixa etária inicial limitada a 0–18 anos; catálogo inicial permite cadastro/listagem de metadados, sem definições gráficas executáveis. Limites explícitos constam em PHASE_1.md.
+
+## ADR-007 — Acesso e serialização explícitos
+
+Ampliação autorizada em 26/09/2026: sessões opacas revogáveis no MariaDB, cookie HttpOnly/SameSite, hashes scrypt e autorização por ação no backend. Rotas internas são privadas por padrão, com schemas estritos e serializers por lista de campos permitidos. Administração de contas apenas para ADMIN; EDITOR produz e envia para revisão; REVIEWER consulta e devolve a rascunho. Sem token em JSON/localStorage.
+
+Acesso inicial via bootstrap local que recusa contas existentes. Mudanças de perfil, desativação e senha revogam sessões. Compartilhamento interno de livros é explícito; não prometer isolamento por livro ainda inexistente. Defesa adicional no Vite limita arquivos servidos e bloqueia .env/.local/API. Detalhes, limites e referências em SECURITY.md.

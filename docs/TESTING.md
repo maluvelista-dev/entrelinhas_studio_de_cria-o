@@ -52,7 +52,11 @@ Executar a mesma suíte de migrations no MariaDB local, fornecido pelo serviço 
 - [ ] Simular falha de API/banco e verificar erro compreensível.
 - [ ] Conferir console e rede, navegação por teclado e regressão do CRUD.
 
-## Registro da Fase 0
+## Resultados da Fase 1
+
+Implementação, resultados e checklist de aceite em [PHASE_1.md](PHASE_1.md); evidências dos dois MariaDB em [DATABASE.md](DATABASE.md). A suíte E2E usa build estático para evitar recarregamentos de desenvolvimento. Nenhum teste usa o banco de desenvolvimento.
+
+## Registro histórico da Fase 0
 
 Entrega exclusivamente documental. Não existe package.json, suíte automatizada, lint configurado ou build da aplicação. Esses gates estão **não executados / não aplicáveis ao artefato atual**, e não aprovados. O desvio das regras gerais está explícito em ADR-005; a aceitação desta entrega documental cabe ao usuário.
 
@@ -65,4 +69,8 @@ Checklist de aceite documental:
 - [ ] Usuário aceita escopo e critérios da Fase 1.
 - [ ] Usuário autoriza explicitamente a próxima fase.
 
-Fase 0 aguarda aceite; nenhuma fase posterior está autorizada.
+Fase 0 aprovada pelo usuário em 24/09/2026; Fase 1 autorizada na mesma sessão. Os itens acima registram o processo documental original. Fase 2 continua sem autorização.
+
+## Segurança adicionada à Fase 1
+
+Consultar SECURITY.md. Gates incluem permissões por perfil, parâmetros estritos, serialização aninhada sem campos sensíveis, sessões expiradas/revogadas, Origin, cookies, hash de senha e limiter de login. O teste de servidor Vite usa sentinela sintética para verificar bloqueio de arquivos privados. A migration 003 é validada nos dois MariaDB. O E2E usa credenciais aleatórias de teste e cobre administrador/revisor.

@@ -1,4 +1,4 @@
-# Arquitetura proposta — Fase 0
+# Arquitetura — Fase 1
 
 ## Princípios e limites
 
@@ -45,11 +45,11 @@ O banco da aplicação é **MariaDB**, fornecido localmente pelo serviço **“M
 
 Portas propostas: Studio `127.0.0.1:5173`, API `127.0.0.1:3000`, banco `127.0.0.1:3306`. Vite encaminha `/api` para Express. Validar ocupação das portas antes do setup.
 
-Na Fase 1: confirmar conexão e `SELECT VERSION()`, criar banco exclusivo `book_studio`, banco separado `book_studio_test` e usuário de aplicação com privilégios limitados. Não reutilizar tabelas de outros projetos nem assumir usuário root sem senha. Configurar `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` e `STORAGE_ROOT` em `.env` ignorado pelo Git. Credenciais nunca usam prefixo `VITE_`. `.env.example` conterá apenas placeholders.
+Fase 1: conexão e versão confirmadas; bancos exclusivos book_studio e book_studio_test criados, com usuários separados de aplicação, migrations e testes. Consulte [DATABASE.md](DATABASE.md). Não reutilizar tabelas de outros projetos nem assumir usuário root sem senha. Configurar `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` e `STORAGE_ROOT` em `.env` ignorado pelo Git. Credenciais nunca usam prefixo `VITE_`. `.env.example` conterá apenas placeholders.
 
 ## VPS
 
-Linux com reverse proxy e TLS, build estático do Studio, processo Node supervisionado, MariaDB em rede privada e filesystem persistente. Produção deverá utilizar MariaDB em versão mantida. Validar migrations e testes de integração tanto no MariaDB local quanto em instância isolada com a versão e configuração relevantes do MariaDB alvo de produção. Registrar versões e resultados: aprovação apenas local não satisfaz esse gate. Não instalar o pacote XAMPP na VPS como estratégia de produção. Autenticação e autorização internas precisam existir antes de acesso remoto da equipe; a Fase 1 permanece local até essa decisão.
+Linux com reverse proxy e TLS, build estático do Studio, processo Node supervisionado, MariaDB em rede privada e filesystem persistente. Produção deverá utilizar MariaDB em versão mantida. Validar migrations e testes de integração tanto no MariaDB local quanto em instância isolada com a versão e configuração relevantes do MariaDB alvo de produção. Registrar versões e resultados: aprovação apenas local não satisfaz esse gate. Não instalar o pacote XAMPP na VPS como estratégia de produção. Autenticação e autorização foram adicionadas à Fase 1 por solicitação do usuário. O uso permanece local até revisão de implantação com HTTPS e configuração operacional; consulte SECURITY.md.
 
 ## Storage e publicação
 
@@ -61,9 +61,11 @@ Banco e filesystem não compartilham transação: usar staging e compensação p
 
 ## Dependências mínimas por etapa
 
-Fase 0: nenhuma instalação. Fase 1: React, react-dom, Vite e plugin React; Express, mysql2 e Zod para validação em JavaScript; Vitest, Supertest, ESLint e plugins React. Testing Library/jsdom somente quando houver componentes com comportamento a testar. Selecionar versões estáveis compatíveis com Node 24 e registrar lockfile no setup. Migrations SQL com ferramenta pequena a selecionar no início da Fase 1, considerando que DDL no MariaDB pode causar commit implícito.
+Versões efetivas estão nos package.json e package-lock.json. ESLint 10 possui análise JSX nativa; usamos apenas o plugin React Hooks compatível, evitando plugin redundante e downgrade do lint.
 
-Fase 2: PixiJS; GSAP na primeira animação executável. Playwright ao surgir fluxo E2E crítico. Não instalar bibliotecas de PDF, vídeo, pagamentos ou mobile agora.
+Fase 0: nenhuma instalação. Fase 1: React, react-dom, Vite e plugin React; Express, mysql2 e Zod para validação em JavaScript; Vitest, Supertest, ESLint e plugins React. Testing Library/jsdom somente quando houver componentes com comportamento a testar. Selecionar versões estáveis compatíveis com Node 24 e registrar lockfile no setup. Migrations SQL executadas por runner pequeno próprio com lock, checksum e estado de execução. DDL no MariaDB pode causar commit implícito; recuperação documentada em DATABASE.md.
+
+Fase 2: PixiJS; GSAP na primeira animação executável. Playwright adicionado na Fase 1 para o fluxo crítico já existente de criação, edição e revisão, usando Edge e build estático. Não instalar bibliotecas de PDF, vídeo, pagamentos ou mobile agora.
 
 ## Referências verificadas
 

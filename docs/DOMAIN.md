@@ -1,6 +1,6 @@
 # Domínio e banco inicial proposto
 
-Proposta para revisão, sem DDL executado. Banco da aplicação: MariaDB, fornecido localmente pelo serviço “MySQL” do XAMPP. Produção utilizará MariaDB em versão mantida; migrations precisam ser validadas nos dois ambientes. MySQL 8 não é equivalente ou substituto de teste. InnoDB, `utf8mb4`, IDs UUID gerados no Node armazenados em `CHAR(36)`, datas `DATETIME(3)` em UTC. Slugs normalizados em minúsculas com unicidade. Collation explicitada nas migrations; não depender dos defaults do servidor.
+Modelo inicial implementado nas migrations 001, 002 e 003. Banco da aplicação: MariaDB, fornecido localmente pelo serviço “MySQL” do XAMPP. Produção utilizará MariaDB em versão mantida; migrations precisam ser validadas nos dois ambientes. MySQL 8 não é equivalente ou substituto de teste. InnoDB, `utf8mb4`, IDs UUID gerados no Node armazenados em `CHAR(36)`, datas `DATETIME(3)` em UTC. Slugs normalizados em minúsculas com unicidade. Collation explicitada nas migrations; não depender dos defaults do servidor.
 
 ## Agregados
 
@@ -15,7 +15,7 @@ Library reúne Asset e LibraryItem (personagem, objeto, background, áudio e pos
 | library_items | id PK, kind, name, owner_book_id FK nullable, asset_id FK nullable, schema_version, definition_json, created_at, updated_at |
 | book_status_history | id PK, book_version_id FK, from_status, to_status, actor_id nullable, comment nullable, created_at |
 
-Títulos incompletos podem existir em rascunho conforme regras mínimas de criação, mas não passar pelo gate editorial. Faixa etária exige ambos limites ou nenhum, inteiros não negativos e mínimo <= máximo. Status usa VARCHAR e CHECK, com transições validadas pelo domínio. Validar suporte efetivo das constraints na instância instalada.
+Títulos incompletos podem existir em rascunho conforme regras mínimas de criação, mas não passar pelo gate editorial. Faixa etária exige ambos limites ou nenhum, inteiros entre 0 e 18 anos e mínimo <= máximo. Título é obrigatório na criação; descrição, faixa etária e capa podem permanecer incompletas em rascunho. Status usa VARCHAR e CHECK, com transições validadas pelo domínio. Constraints verificadas nos MariaDB 10.4.32 e 11.4.13.
 
 JSON guarda estrutura variável; campos pesquisados frequentemente permanecem colunas relacionais. No MariaDB, JSON é alias de LONGTEXT: validar sintaxe no banco e semântica/schemaVersion na aplicação. Não depender de operadores JSON específicos do MySQL. Repositório normaliza desserialização do driver e detecta documento inválido.
 
@@ -41,7 +41,13 @@ Na Fase 10, criar published_snapshots com versão, schemaVersion, documento cong
 
 PublicationValidator retorna `{ valid, errors, warnings }`, com código, caminho e mensagem por ocorrência. Cobrir título, capa, idade, páginas contíguas, schemas, referências, assets, timeline e compatibilidade de ações. Warnings não escondem erros obrigatórios. Endpoint público consulta somente snapshot apontado, nunca agrega dados editáveis ao vivo.
 
-BookStatusHistory recebe identidade autenticada futuramente. Enquanto desenvolvimento for exclusivamente local e sem login, actor_id pode ser nulo e deve ser identificado como ação local sem atribuição; nunca simular auditoria de usuário.
+BookStatusHistory agora recebe actor_id da sessão autenticada, com FK para users. O DTO retorna actorId e actorName selecionados explicitamente. Registros anteriores à autenticação mantêm ator nulo e identificação de legado; o cliente nunca escolhe o ator. A migration 003 acrescenta users e auth_sessions. Ver SECURITY.md.
+
+## Contratos da Fase 1
+
+Rotas internas em /api/internal/books: POST/GET na coleção, GET/PUT por ID, POST pages, PUT pages/:pageId, PUT page-order e POST transitions. Mutações existentes exigem revision. /api/internal/library oferece GET/POST; /api/internal/assets oferece GET de metadados. Schemas estritos recusam campos desconhecidos. Slug permanece fixo.
+
+Documentos de cena/timeline/interações só aceitam estruturas vazias nesta fase; narração permanece null. Não aceitar dados que o Engine ainda não sabe executar.
 
 ## Exclusões
 

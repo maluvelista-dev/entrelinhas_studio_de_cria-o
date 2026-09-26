@@ -4,8 +4,8 @@ Nenhuma próxima fase começa sem aprovação explícita. Cada fase termina com 
 
 | Fase | Entrega | Critério principal |
 | --- | --- | --- |
-| 0 — atual | Discovery, arquitetura e propostas documentadas | Revisão de consistência e aceite do usuário |
-| 1 | Setup, Library, Book, Page, workflow inicial | Persistência real, regras testadas, UI mínima e gates verdes |
+| 0 — aprovada | Discovery, arquitetura e propostas documentadas | Revisão de consistência e aceite do usuário |
+| 1 — em aceite | Setup, Library, Book, Page, workflow inicial | Persistência real, regras testadas, UI mínima e gates verdes |
 | 2 | Engine mínimo e coordenadas | Cena interpretada, transforms testados e render validado |
 | 3 | Character system | Hierarquia, pivots e anchors consistentes |
 | 4 | Animation Playground | DummyCharacter, inspector, debug, presets, reset e export JSON |
@@ -20,7 +20,9 @@ Nenhuma próxima fase começa sem aprovação explícita. Cada fase termina com 
 | 13 | Vídeo | Render determinístico, áudio e proporções sociais |
 | Posterior | Mobile consumidor | Planejamento próprio após API estável |
 
-## Fase 1 — plano detalhado, ainda não autorizado
+## Fase 1 — autorizada em 24/09/2026
+
+Implementação entregue para aceite. O plano abaixo registra os critérios aprovados; resultados e checklist estão em [PHASE_1.md](PHASE_1.md).
 
 ### 1. Fundação e conexão
 
@@ -48,7 +50,7 @@ DoD: assets globais e exclusivos identificados, referências inválidas recusada
 
 ### 5. Workflow inicial
 
-Implementar DRAFT -> REVIEW -> DRAFT com histórico transacional e ator local identificado como não autenticado. Reservar estados restantes; endpoint rejeita tentativa de publicar. Commit sugerido: `feat(workflow): track draft review transitions`.
+Implementar DRAFT -> REVIEW -> DRAFT com histórico transacional e ator autenticado, conforme ampliação de segurança solicitada em 26/09/2026. Reservar estados restantes; endpoint rejeita tentativa de publicar. Commit sugerido: `feat(workflow): track draft review transitions`.
 
 DoD: transições inválidas não alteram conteúdo/histórico; edição em revisão exige retorno a rascunho; rollback em falha de histórico; nenhum endpoint público expõe drafts.
 
@@ -60,4 +62,4 @@ DoD: checklist manual executado, testes unitários/integração/componentes pert
 
 ## Exclusões da Fase 1
 
-Sem PixiJS/GSAP até o Engine, editor gráfico, importador de character packs, playback, publicação real, endpoints públicos, PDF/vídeo, mobile ou cobrança. Autenticação será planejada antes de qualquer uso remoto; o setup inicial atende desenvolvimento local.
+Sem PixiJS/GSAP até o Engine, editor gráfico, importador de character packs, playback, publicação real, endpoints públicos, PDF/vídeo, mobile ou cobrança. Autenticação, perfis e serializers foram incluídos por solicitação explícita do usuário nesta fase. Uso remoto continua dependendo de revisão de implantação.

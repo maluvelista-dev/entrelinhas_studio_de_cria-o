@@ -1,4 +1,4 @@
-# Formato de livro — contrato provisório
+# Formato de livro — contrato inicial, schemaVersion 1
 
 O DTO do Studio reúne Book e sua workingVersion. `version` identifica revisão editorial; `schemaVersion` identifica contrato de serialização; `revision` controla edições concorrentes. São conceitos independentes.
 
@@ -33,4 +33,4 @@ O DTO do Studio reúne Book e sua workingVersion. `version` identifica revisão 
 }
 ```
 
-IDs ilustrativos; produção usará UUIDs. Cover/narration referenciam assets por ID, sem caminhos locais. Contrato público será definido na Fase 11 e não exporá automaticamente o DTO interno. Schema desconhecido gera erro explícito; migração de contrato deve ter fixtures e testes de ida e volta. Ainda não implementar preenchimento livre de cenas que o Engine não consiga interpretar.
+IDs ilustrativos; a implementação usa UUIDs. Cover/narration referenciam assets por ID, sem caminhos locais. Contrato público será definido na Fase 11 e não exporá automaticamente o DTO interno. Schema desconhecido gera erro explícito; migração de contrato deve ter fixtures e testes de ida e volta. Ainda não implementar preenchimento livre de cenas que o Engine não consiga interpretar.
