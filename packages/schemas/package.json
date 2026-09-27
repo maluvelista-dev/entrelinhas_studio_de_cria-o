@@ -4,7 +4,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.js",
-    "./scene": "./src/scene.js"
+    "./scene": "./src/scene.js",
+    "./character": "./src/character.js"
   },
   "dependencies": {
     "zod": "4.6.5"

@@ -1,8 +1,8 @@
-import { Application, Container, Graphics } from 'pixi.js';
+import { Application, Container, Graphics, Sprite } from 'pixi.js';
 import { interpretScene } from './scene.js';
 
 // No ticker: static scenes render on explicit load/resize commands only.
-export async function createSceneRenderer(host, input) {
+export async function createSceneRenderer(host, input, { textures = new Map() } = {}) {
   const prepared = interpretScene(input);
   const app = new Application();
   await app.init({ width: prepared.scene.width, height: prepared.scene.height,
@@ -28,11 +28,18 @@ export async function createSceneRenderer(host, input) {
         node.position.set(t.x, t.y); node.scale.set(t.scaleX, t.scaleY);
         node.rotation = t.rotation; node.pivot.set(t.pivotX, t.pivotY);
         node.alpha = e.opacity; node.visible = e.visible; node.zIndex = e.zIndex;
-        const graphic = new Graphics();
-        if (e.kind === 'rectangle') graphic.rect(0, 0, e.width, e.height);
-        else graphic.ellipse(e.width/2, e.height/2, e.width/2, e.height/2);
-        graphic.fill(e.color);
-        node.addChild(graphic);
+        if (e.kind === 'sprite') {
+          const texture = textures.get(e.assetId);
+          if (!texture || texture.destroyed) throw new Error('Textura ausente para sprite.');
+          const sprite = new Sprite(texture);
+          sprite.width = e.width; sprite.height = e.height; sprite.tint = e.color;
+          node.addChild(sprite);
+        } else if (e.kind !== 'group') {
+          const graphic = new Graphics();
+          if (e.kind === 'rectangle') graphic.rect(0, 0, e.width, e.height);
+          else graphic.ellipse(e.width/2, e.height/2, e.width/2, e.height/2);
+          graphic.fill(e.color); node.addChild(graphic);
+        }
         (e.parentId ? nodes.get(e.parentId) : container).addChild(node);
         nodes.set(e.id, node);
       }

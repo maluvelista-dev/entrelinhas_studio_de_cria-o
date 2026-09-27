@@ -1,7 +1,7 @@
 import { z } from 'zod';
 const number = z.number().finite().min(-100000).max(100000);
 const point = z.strictObject({ x: number, y: number });
-const id = z.string().regex(/^[a-zA-Z][a-zA-Z0-9_-]{0,79}$/);
+const id = z.string().regex(/^[a-zA-Z][a-zA-Z0-9_-]{0,199}$/);
 export const sceneSchema = z.strictObject({
   schemaVersion: z.literal(1),
   width: z.number().finite().positive().max(4096),
@@ -9,7 +9,8 @@ export const sceneSchema = z.strictObject({
   background: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   entities: z.array(z.strictObject({
     id, parentId: id.nullable().default(null),
-    kind: z.enum(['rectangle', 'ellipse']),
+    kind: z.enum(['rectangle', 'ellipse', 'group', 'sprite']),
+    assetId: z.string().regex(/^[a-zA-Z][a-zA-Z0-9_-]{0,79}$/).optional(),
     width: z.number().finite().positive().max(4096),
     height: z.number().finite().positive().max(4096),
     color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
@@ -26,6 +27,7 @@ export const sceneSchema = z.strictObject({
   const map = new Map();
   for (const entity of scene.entities) {
     if (map.has(entity.id)) context.addIssue({ code: 'custom', message: 'ID duplicado.' });
+    if ((entity.kind === 'sprite') !== (entity.assetId !== undefined)) context.addIssue({ code: 'custom', message: 'Referência de sprite inválida.' });
     map.set(entity.id, entity);
   }
   for (const entity of scene.entities) {

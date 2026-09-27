@@ -5,7 +5,9 @@
   "exports": {
     ".": "./src/index.js",
     "./renderer": "./src/renderer.js",
-    "./example": "./examples/validation-scene.js"
+    "./example": "./examples/validation-scene.js",
+    "./character-example": "./examples/validation-character.js",
+    "./image-loader": "./src/image-loader.js"
   },
   "dependencies": {
     "@studio/schemas": "*",
