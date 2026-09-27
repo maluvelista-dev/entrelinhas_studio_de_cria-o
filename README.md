@@ -70,3 +70,7 @@ Ler a documentação antes de cada etapa. Commits pequenos, testes, lint, build,
 ## Engine e identidade visual
 
 A fase 2 está disponível para aceite em [docs/PHASE_2.md](docs/PHASE_2.md). Após login, Visualização abre a cena de validação do Engine. O Tema A rege as telas existentes conforme [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md). Para rodar E2E sem encerrar os servidores locais, veja as portas alternativas em [docs/TESTING.md](docs/TESTING.md).
+
+## Personagens
+
+Fase 3 disponível para aceite em [docs/PHASE_3.md](docs/PHASE_3.md). Após login, abra Visualização → Personagem para conferir hierarquia, pivôs, anchors e perspectivas. Contrato em [docs/CHARACTER_FORMAT.md](docs/CHARACTER_FORMAT.md). O Tema A continuará nas próximas fases.

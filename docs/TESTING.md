@@ -88,3 +88,7 @@ npm.cmd run test:e2e
 ```
 
 Esses servidores continuam exclusivos, com reuseExistingServer=false e credenciais de .env.test. As variáveis mudam somente as portas do E2E; não mudam o banco permitido. Integração local e E2E não devem executar simultaneamente porque compartilham o banco de testes.
+
+## Fase 3
+
+Resultados em [PHASE_3.md](PHASE_3.md). Testes puros cobrem hierarquia, pivôs, rotação, espelhamento, anchors local/normalized, erro de referência/asset e round-trip. Cache verifica concorrência, retry e descarte durante carregamento. O novo E2E lê pixels reais de sprite e verifica posições conhecidas de anchors, troca de perspectivas e desmontagem. Capturas nas três resoluções desktop; regressão em 390px. Não alterar banco de desenvolvimento para gerar esses dados.

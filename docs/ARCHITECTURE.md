@@ -1,4 +1,4 @@
-# Arquitetura — Fases 1 e 2
+# Arquitetura — Fases 1 a 3
 
 ## Princípios e limites
 
@@ -79,3 +79,9 @@ Fase 2: PixiJS; GSAP na primeira animação executável. Playwright adicionado n
 @studio/engine exporta matemática/interpretação separadas de ./renderer (PixiJS) e ./example (dados de validação). @studio/schemas/scene é um contrato separado de pageDocumentSchema; não altera a persistência existente. Origem superior esquerda, X direita/Y baixo, radianos, pivot relativo à dimensão local; position normalizada e offset relativo usam dimensões do parent ou da cena. Transformações world acumulam ancestors; resize aplica contain ao viewport sem alterar o documento.
 
 React cria/destrói o renderer em effect, observa resize e mostra estado de carregamento/erro. Não controla frames. O renderer estático não inicia ticker. Formas vetoriais não precisam de carregamento de assets; AssetManager/cache e GSAP ficam para a primeira integração correspondente. Mais detalhes em PHASE_2.md.
+
+## Character system implementado
+
+Character definitions e instances são contratos separados. O schema conhece partes/anchors, sem React ou renderer. createCharacter resolve assets cadastrados e transforma as partes em entidades da cena; resolveAnchor usa as mesmas matrizes world. O renderer conhece group/sprite e formas; texturas são fornecidas externamente. AssetManager possui cache e ciclo de vida por preview, com loader injetado para testes. O adaptador browser usa Texture.from com imagens próprias, sem destruir recursos de outro preview via cache global.
+
+Studio controla seleção de perspectiva/debug e desmonta renderer antes do descarte das texturas. O documento persistido de página e as rotas internas permanecem inalterados; edição/importação de rigs dependerá de evolução explícita, com autorização e serializer, quando implementada.

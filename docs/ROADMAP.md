@@ -6,8 +6,8 @@ Nenhuma próxima fase começa sem aprovação explícita. Cada fase termina com 
 | --- | --- | --- |
 | 0 — aprovada | Discovery, arquitetura e propostas documentadas | Revisão de consistência e aceite do usuário |
 | 1 — aprovada | Setup, Library, Book, Page, workflow inicial | Persistência real, regras testadas, UI mínima e gates verdes |
-| 2 — em aceite | Engine mínimo e coordenadas | Cena interpretada, transforms testados e render validado |
-| 3 | Character system | Hierarquia, pivots e anchors consistentes |
+| 2 — aprovada | Engine mínimo e coordenadas | Cena interpretada, transforms testados e render validado |
+| 3 — em aceite | Character system | Hierarquia, pivots e anchors consistentes |
 | 4 | Animation Playground | DummyCharacter, inspector, debug, presets, reset e export JSON |
 | 5 | Poses, keyframes e presets | Interpolação e compatibilidade verificadas |
 | 6 | Scene Editor | Montar, persistir e recarregar cena sem perdas |
@@ -66,4 +66,8 @@ Sem PixiJS/GSAP até o Engine, editor gráfico, importador de character packs, p
 
 ## Fase 2 — autorizada em 26/09/2026
 
-Engine mínimo, coordenadas e visualização implementados, com Tema A aplicado por solicitação adicional do usuário. Evidências, limites e checklist em [PHASE_2.md](PHASE_2.md). Design System obrigatório em [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md), aplicação em [DESIGN_IMPLEMENTATION.md](DESIGN_IMPLEMENTATION.md). Fase 3 depende do aceite desta entrega e autorização.
+Engine mínimo, coordenadas e visualização implementados, com Tema A aplicado por solicitação adicional do usuário. Evidências, limites e checklist em [PHASE_2.md](PHASE_2.md). Design System obrigatório em [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md), aplicação em [DESIGN_IMPLEMENTATION.md](DESIGN_IMPLEMENTATION.md). Fase 2 aceita e Fase 3 autorizada pelo usuário em 26/09/2026.
+
+## Fase 3 — autorizada em 26/09/2026
+
+Character system implementado e disponível para aceite em [PHASE_3.md](PHASE_3.md). Tema A continua obrigatório nesta e em todas as fases posteriores. A referência visual não antecipa funcionalidades. Preservar revisão e aceite entre fases; Fase 4 não iniciada.

@@ -68,3 +68,9 @@ Fase 2 autorizada: PixiJS 8.21.0, sem GSAP até haver animação executável. Ce
 ## ADR-009 — Tema A como norma visual
 
 Design System entregue durante a Fase 2 passa a reger interfaces existentes e futuras. Tokens, Inter local, Lucide e componentes reutilizáveis substituem o visual editorial verde anterior. A especificação funcional prevalece sobre exemplos ilustrativos de telas futuras: sem wizard vazio, upload fictício, publicação ou editores antecipados. Detalhes e escolhas de contraste em DESIGN_IMPLEMENTATION.md. Canvas/timeline escuros podem ser avaliados nas Fases 4–7, sem dark mode global agora.
+
+## ADR-010 — Personagens definidos por dados, assets por referência
+
+Fase 3: manifesto estrito com perspectivas opcionais, partes hierárquicas e anchors nomeados. Cada instância qualifica seus IDs e aplica um transform externo, preservando a definição reutilizável. Grupos não exigem textura; sprites recebem texturas resolvidas pela aplicação, nunca URLs vindas de manifesto. Cache com escopo de preview é suficiente nesta fase e evita descarte global de recursos usados por outras instâncias.
+
+A validação visual usa fixture geométrica com PNG mínimo, em duas instâncias (original/espelhada) e duas perspectivas. Não antecipar importador, inspector ou animações do Playground. Todos os novos controles reutilizam o Tema A; publicação e persistência de cena permanecem nas fases respectivas. Referências: [Sprite](https://pixijs.com/8.x/guides/components/scene-objects/sprite) e [Textures](https://pixijs.com/8.x/guides/components/textures).

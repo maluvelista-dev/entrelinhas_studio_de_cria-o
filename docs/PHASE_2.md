@@ -1,6 +1,6 @@
 # Fase 2 — Engine mínimo e aplicação do Tema A
 
-Autorizada em 26/09/2026 após o usuário testar a Fase 1, informar “tudo ok” e pedir para seguir o roteiro. Durante a execução, o usuário aprovou o Design System “Ilustrativo suave” e solicitou sua aplicação às telas existentes. Implementação disponível para aceite; a Fase 3 não foi iniciada.
+Autorizada em 26/09/2026 após o usuário testar a Fase 1, informar “tudo ok” e pedir para seguir o roteiro. Durante a execução, o usuário aprovou o Design System “Ilustrativo suave” e solicitou sua aplicação às telas existentes. Entrega aceita pelo usuário ao autorizar a Fase 3 em 26/09/2026. O checklist abaixo preserva o roteiro apresentado, sem presumir execução individual de todos os itens.
 
 ## Entrega
 
