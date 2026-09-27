@@ -403,7 +403,7 @@ export function App({ user, onLogout }) {
           )}
           <footer>
             Feito para imaginar. Organizado para criar.
-            <span>Entrelinhas Studio · Fase 2</span>
+            <span>Entrelinhas Studio · Fase 3</span>
           </footer>
         </div>
       </main>

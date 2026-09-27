@@ -205,3 +205,21 @@ footer { display: flex; justify-content: space-between; gap: var(--space-5); mar
 
 .toast { position: fixed; right: var(--space-6); bottom: var(--space-6); z-index: var(--z-feedback); max-width: min(480px, calc(100vw - 32px)); display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--color-accent-green); border-radius: var(--radius-lg); background: var(--color-surface); color: var(--color-accent-green-text); box-shadow: var(--shadow-elevated); }
 .toast button { border: 0; background: transparent; color: inherit; min-width: 32px; min-height: 32px; border-radius: var(--radius-sm); }
+
+.preview-tabs { margin-bottom: var(--space-6); }
+.character-controls { display: flex; align-items: center; gap: var(--space-6); flex-wrap: wrap; margin-bottom: var(--space-6); }
+.character-controls > label:first-child { width: 200px; }
+.character-layout { display: grid; grid-template-columns: 200px minmax(0,1fr); gap: var(--space-6); }
+.character-parts { background: var(--color-background); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); }
+.character-parts h3 { font-size: var(--font-body); }
+.character-parts ul { list-style: none; margin: 0; padding: 0; }
+.character-parts li { padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); font-size: var(--font-small); }
+.character-parts small { display: block; color: var(--color-text-secondary); }
+.character-canvas { min-width: 0; }
+.character-anchors { margin-top: var(--space-6); border-top: 1px solid var(--color-border); padding-top: var(--space-4); }
+.character-anchors summary { cursor: pointer; color: var(--color-primary-text); font-weight: 600; }
+.table-scroll { overflow-x: auto; }
+.character-anchors table { width: 100%; border-collapse: collapse; margin-top: var(--space-4); font-size: var(--font-small); }
+.character-anchors td, .character-anchors th { text-align: left; padding: var(--space-3); border-bottom: 1px solid var(--color-border); }
+@media (max-width:1100px) { .character-layout { grid-template-columns: 160px minmax(0,1fr); } }
+@media (max-width:767px) { .character-layout { grid-template-columns: 1fr; } .character-parts ul { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); } }

@@ -1,6 +1,7 @@
+import { CharacterPreview } from './CharacterPreview.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { validationScene as scene } from '@studio/engine/example';
-export function EnginePreview() {
+function GeometryPreview() {
   const host = useRef(null);
   const [error, setError] = useState('');
   const [ready, setReady] = useState(false);
@@ -30,4 +31,16 @@ export function EnginePreview() {
     {error ? <p role="alert">{error}</p> : <p role="status">{ready ? 'Cena renderizada.' : 'Preparando visualização…'}</p>}
     <div ref={host} className="engine-host" />
   </section>;
+}
+
+export function EnginePreview() {
+  const [tab, setTab] = useState('geometry');
+  return <>
+    <div className="tabs preview-tabs" role="tablist" aria-label="Validação do Engine">
+      <button id="geometry-tab" role="tab" aria-selected={tab === 'geometry'} aria-controls="geometry-panel" onClick={() => setTab('geometry')}>Coordenadas</button>
+      <button id="character-tab" role="tab" aria-selected={tab === 'character'} aria-controls="character-panel" onClick={() => setTab('character')}>Personagem</button>
+    </div>
+    {tab === 'geometry' ? <div id="geometry-panel" role="tabpanel" aria-labelledby="geometry-tab"><GeometryPreview /></div>
+      : <div id="character-panel" role="tabpanel" aria-labelledby="character-tab"><CharacterPreview /></div>}
+  </>;
 }
