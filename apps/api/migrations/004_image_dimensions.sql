@@ -1,0 +1,7 @@
+ALTER TABLE assets
+  ADD COLUMN width INT UNSIGNED NULL,
+  ADD COLUMN height INT UNSIGNED NULL,
+  ADD CONSTRAINT asset_dimensions_valid CHECK (
+    (width IS NULL AND height IS NULL) OR
+    (width IS NOT NULL AND height IS NOT NULL AND width BETWEEN 1 AND 4096 AND height BETWEEN 1 AND 4096)
+  );

@@ -24,7 +24,7 @@ export function createLibraryService(pool, storage) {
     },
     async assets() {
       const [rows] = await pool.query(`SELECT id, original_name AS name, media_type AS mediaType,
-        owner_book_id AS ownerBookId FROM assets ORDER BY original_name`);
+        owner_book_id AS ownerBookId, width, height, byte_size AS byteSize FROM assets ORDER BY original_name`);
       return rows;
     },
     async create(raw) {

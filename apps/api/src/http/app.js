@@ -1,3 +1,6 @@
+import { pipeline } from 'node:stream/promises';
+import { createAssetService } from '../modules/assets/service.js';
+import { imageUpload } from './upload.js';
 import express from 'express';
 import { z, ZodError } from 'zod';
 import { idSchema, transitionSchema } from '@studio/schemas';
@@ -14,6 +17,7 @@ export function createApp({ pool, storage, security = { origins: ['http://127.0.
   const books = createBookService(pool, storage);
   const library = createLibraryService(pool, storage);
   const auth = createAuthService(pool);
+  const assets = createAssetService(pool, storage);
   const cookieName = security.secureCookies ? '__Host-studio_session' : 'studio_session';
   const cookieOptions = { httpOnly: true, sameSite: 'strict', secure: security.secureCookies, path: '/' };
   const authenticated = requireAccess(auth, cookieName);
@@ -25,7 +29,7 @@ export function createApp({ pool, storage, security = { origins: ['http://127.0.
       if (req.get('sec-fetch-site') === 'cross-site' || !security.origins.includes(req.get('origin'))) {
         return next(new AppError(403, 'ORIGIN_DENIED', 'Origem não autorizada.'));
       }
-      if (!req.is('application/json')) return next(new AppError(415, 'JSON_REQUIRED', 'Use conteúdo JSON.'));
+      if (!(req.method === 'POST' && req.path === '/api/internal/assets' && req.is('multipart/form-data')) && !req.is('application/json')) return next(new AppError(415, 'JSON_REQUIRED', 'Use conteúdo JSON.'));
     }
     next();
   });
@@ -53,7 +57,7 @@ export function createApp({ pool, storage, security = { origins: ['http://127.0.
   // Every internal route is authenticated before any resource lookup.
   const internal = express.Router();
   app.use('/api/internal', authenticated, internal);
-  for (const parameter of ['bookId', 'pageId', 'userId']) {
+  for (const parameter of ['bookId', 'pageId', 'userId', 'assetId']) {
     internal.param(parameter, (_req, _res, next, value) => {
       if (!idSchema.safeParse(value).success) throw new AppError(400, 'INVALID_ID', 'Identificador inválido.');
       next();
@@ -80,6 +84,13 @@ export function createApp({ pool, storage, security = { origins: ['http://127.0.
   }, serializeBook);
   route('get', '/library', 'library:read', () => library.list(), arrayOf(serializeLibraryItem));
   route('post', '/library', 'library:write', req => library.create(req.body), serializeLibraryItem, 201);
+  internal.post('/assets', permit('library:write'), imageUpload((body, file) => assets.import(body, file), serializeAsset));
+  // Binary image representation: fixed allowlisted MIME, authenticated ID lookup; never expose storage paths.
+  internal.get('/assets/:assetId/content', permit('library:read'), async (req, res) => {
+    const content = await assets.content(req.params.assetId);
+    res.set({ 'Content-Type': content.mediaType, 'Content-Disposition': 'inline', 'Cross-Origin-Resource-Policy': 'same-origin' });
+    await pipeline(content.stream, res);
+  });
   route('get', '/assets', 'library:read', () => library.assets(), arrayOf(serializeAsset));
   route('get', '/users', 'users:manage', () => auth.listUsers(), arrayOf(serializeUser));
   route('post', '/users', 'users:manage', req => auth.createUser(req.body, req.actor.id), serializeUser, 201);
@@ -88,6 +99,7 @@ export function createApp({ pool, storage, security = { origins: ['http://127.0.
     req => auth.resetPassword(req.params.userId, req.body, req.actor.id), () => ({ updated: true }));
   app.use((_req, _res, next) => next(new AppError(404, 'NOT_FOUND', 'Recurso não encontrado.')));
   app.use((error, _req, res, _next) => {
+    if (res.headersSent) { res.destroy(); return; }
     if (error instanceof ZodError)
       return res.status(422).json({
         error: {

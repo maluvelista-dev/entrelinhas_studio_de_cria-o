@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
+import sharp from "sharp";
 import path from "node:path";
 import supertest from "supertest";
 import { createAuthService } from "../../apps/api/src/modules/auth/service.js";
@@ -74,7 +75,7 @@ beforeAll(async () => {
     "INSERT INTO books(id,slug,created_at,updated_at) VALUES (?,'migration-marker',UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))",
     [id],
   );
-  expect(await migrate(pool)).toEqual(["002_status_history.sql", "003_access_control.sql"]);
+  expect(await migrate(pool)).toEqual(["002_status_history.sql", "003_access_control.sql", "004_image_dimensions.sql"]);
   const [[marker]] = await pool.execute("SELECT id FROM books WHERE id = ?", [
     id,
   ]);
@@ -449,4 +450,51 @@ it("expira/revoga sessões, redefine senhas e limita tentativas de login", async
   }
   await supertest(limitedApp).post('/api/auth/login').set('Origin', 'http://127.0.0.1:5173')
     .send({ username: 'missing-account', password: 'wrong-password' }).expect(429);
+});
+
+
+it('imports private images atomically and enforces scope, roles and content validation', async () => {
+  const endpoint = '/api/internal/assets';
+  const bytes = await sharp({ create: { width: 32, height: 24, channels: 4, background: '#55aaff80' } }).png().toBuffer();
+  const upload = (owner = '', application = app) => request(application).post(endpoint)
+    .field('name', 'Test illustration').field('kind', 'BACKGROUND').field('ownerBookId', owner)
+    .attach('file', bytes, { filename: 'scene.png', contentType: 'image/png' });
+  const asset = (await upload().expect(201)).body;
+  expect(asset).toMatchObject({ width: 32, height: 24, mediaType: 'image/png', ownerBookId: null });
+  expect(Object.keys(asset).sort()).toEqual(['id', 'name', 'ownerBookId', 'mediaType', 'width', 'height', 'byteSize'].sort());
+  const content = endpoint + '/' + asset.id + '/content';
+  await supertest(app).get(content).expect(401);
+  const downloaded = await request(createApp({ pool, storage })).get(content).expect(200);
+  expect(downloaded.headers['content-type']).toContain('image/png');
+  expect(downloaded.headers['cache-control']).toContain('no-store');
+  expect((await sharp(downloaded.body).metadata()).width).toBe(32);
+  const items = (await request(app).get('/api/internal/library').expect(200)).body;
+  expect(items.some(item => item.assetId === asset.id)).toBe(true);
+  let book = await createBook();
+  const privateAsset = (await upload(book.id).expect(201)).body;
+  await request(app).post(base).send({ title: 'Invalid scope', slug: 'scope-' + randomUUID(), cover: privateAsset.id }).expect(422);
+  book = (await request(app).put(base + '/' + book.id).send({ revision: book.revision, title: book.title, cover: privateAsset.id }).expect(200)).body;
+  expect((await request(app).get(base).expect(200)).body.find(item => item.id === book.id).cover).toBe(privateAsset.id);
+  await request(app).post(base + '/' + book.id + '/transitions').send({ revision: book.revision, status: 'REVIEW' }).expect(200);
+  await upload(book.id).expect(409);
+  await upload(randomUUID()).expect(404);
+  await request(app).get(endpoint + '/invalid/content').expect(400);
+  await request(app).get(endpoint + '/' + randomUUID() + '/content').expect(404);
+  await request(app).post(endpoint).field('name', 'Fake').field('kind', 'BACKGROUND')
+    .attach('file', Buffer.from('<svg/>'), { filename: 'fake.png', contentType: 'image/png' }).expect(415);
+  await request(app).post(endpoint).field('name', 'Extra').field('kind', 'BACKGROUND').field('role', 'ADMIN')
+    .attach('file', bytes, 'scene.png').expect(422);
+  const auth = createAuthService(pool);
+  await auth.createUser({ username: 'upload-reviewer', displayName: 'Reader', role: 'REVIEWER', password: testPassword });
+  const fresh = createApp({ pool, storage });
+  const login = await supertest(fresh).post('/api/auth/login').set('Origin', 'http://127.0.0.1:5173')
+    .send({ username: 'upload-reviewer', password: testPassword }).expect(200);
+  const cookie = login.headers['set-cookie'][0].split(';')[0];
+  await supertest(fresh).get(content).set('Cookie', cookie).expect(200);
+  await supertest(fresh).post(endpoint).set('Origin', 'http://127.0.0.1:5173').set('Cookie', cookie).attach('file', bytes, 'scene.png').expect(403);
+  const { readdir } = await import('node:fs/promises');
+  const before = await readdir(path.join(root, 'illustrations'));
+  await pool.query("CREATE TRIGGER reject_image_item BEFORE INSERT ON library_items FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'test failure'");
+  try { await upload().expect(500); } finally { await pool.query('DROP TRIGGER reject_image_item'); }
+  expect(await readdir(path.join(root, 'illustrations'))).toEqual(before);
 });

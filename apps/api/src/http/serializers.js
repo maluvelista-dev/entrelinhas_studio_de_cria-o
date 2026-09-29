@@ -20,6 +20,7 @@ export function serializeBookSummary(book) {
     revision: book.revision,
     version: book.version,
     pageCount: book.pageCount,
+    cover: book.cover ?? null,
     updatedAt: book.updatedAt,
   };
 }
@@ -81,5 +82,8 @@ export function serializeAsset(asset) {
     name: asset.name,
     mediaType: asset.mediaType,
     ownerBookId: asset.ownerBookId,
+    width: asset.width ?? null,
+    height: asset.height ?? null,
+    byteSize: asset.byteSize ?? null,
   };
 }

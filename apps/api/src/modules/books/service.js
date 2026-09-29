@@ -19,7 +19,7 @@ export function createBookService(pool, storage) {
   return {
     async list() {
       const [rows] = await pool.query(`SELECT b.id, b.slug, v.title, v.status, v.revision,
-        v.version, b.updated_at AS updatedAt,
+        v.version, v.cover_asset_id AS cover, b.updated_at AS updatedAt,
         (SELECT COUNT(*) FROM pages p WHERE p.book_version_id = v.id) AS pageCount
         FROM books b JOIN book_versions v ON v.id = b.working_version_id
         ORDER BY b.updated_at DESC, b.id`);
