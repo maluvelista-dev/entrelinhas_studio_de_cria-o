@@ -86,3 +86,7 @@ Acesso remoto ainda depende de revisão de implantação: HTTPS/reverse proxy, o
 - [OWASP Session Management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html): cookies e ciclo de vida de sessão.
 - [OWASP Password Storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html): parâmetros de scrypt.
 - [Vite server.fs](https://vite.dev/config/server-options): limites de leitura do servidor de desenvolvimento.
+
+## Ilustrações
+
+Upload autenticado com validação e recodificação, leitura privada e DTOs limitados: [contrato e limites operacionais](ILLUSTRATIONS.md).

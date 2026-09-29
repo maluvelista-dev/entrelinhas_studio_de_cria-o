@@ -86,3 +86,7 @@ Migrations já concluídas não devem ser editadas. Evolução usa novo arquivo 
 `npm run db:fixture` cria explicitamente um PNG mínimo e seu registro de asset para testar vinculação pelo catálogo. Não roda automaticamente e não cadastra conteúdo fictício nos livros. Se o INSERT falha, remove o arquivo recém-criado como compensação.
 
 Não há upload HTTP ou endpoint para excluir assets. Storage é infraestrutura privada; referências podem selecionar apenas assets existentes e compatíveis com escopo/tipo. O adaptador recusa traversal, nomes reservados e symlinks. O filesystem deve ser controlado pelo processo local; não oferecer acesso de escrita a terceiros, pois verificação de caminhos não constitui isolamento contra alterações externas concorrentes.
+
+## Dimensões de imagens
+
+004_image_dimensions.sql adiciona width/height opcionais aos assets, preservando registros anteriores. Novas importações gravam dimensões validadas. Ver [importação de ilustrações](ILLUSTRATIONS.md).

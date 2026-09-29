@@ -71,3 +71,7 @@ Engine mínimo, coordenadas e visualização implementados, com Tema A aplicado 
 ## Fase 3 — autorizada em 26/09/2026
 
 Character system implementado e disponível para aceite em [PHASE_3.md](PHASE_3.md). Tema A continua obrigatório nesta e em todas as fases posteriores. A referência visual não antecipa funcionalidades. Preservar revisão e aceite entre fases; Fase 4 não iniciada.
+
+## Ampliação autorizada — importação de ilustrações
+
+Importação PNG/WebP, Biblioteca autenticada e capas implementadas durante a Fase 3. Contrato, limites e validação em [ILLUSTRATIONS.md](ILLUSTRATIONS.md). Não inicia a Fase 4 nem antecipa montagem de cenas.
