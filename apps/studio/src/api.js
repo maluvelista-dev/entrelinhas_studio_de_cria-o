@@ -1,10 +1,11 @@
 export async function api(path, options = {}) {
+  const multipart = options.body instanceof FormData;
   let response;
   try {
     response = await fetch("/api" + path, {
       ...options,
-      headers: { "Content-Type": "application/json", ...options.headers },
-      body: options.body ? JSON.stringify(options.body) : undefined,
+      headers: { ...(multipart ? {} : { "Content-Type": "application/json" }), ...options.headers },
+      body: multipart ? options.body : options.body ? JSON.stringify(options.body) : undefined,
     });
   } catch {
     throw new Error(

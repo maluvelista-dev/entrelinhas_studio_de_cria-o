@@ -1,0 +1,28 @@
+import { test, expect } from '@playwright/test';
+import sharp from 'sharp';
+test('importar uma ilustração e persistir sua capa após recarregar', async ({ page }) => {
+  await page.goto('/');
+  await page.getByLabel('Usuário', { exact: true }).fill(process.env.E2E_USERNAME);
+  await page.getByLabel('Senha', { exact: true }).fill(process.env.E2E_PASSWORD);
+  await page.getByRole('button', { name: 'Entrar', exact: true }).click();
+  await page.getByRole('button', { name: /Biblioteca/ }).click();
+  const buffer = await sharp({ create: { width: 240, height: 160, channels: 4, background: '#6464ee' } }).png().toBuffer();
+  const name = 'Cenário ilustrado ' + Date.now();
+  await page.getByLabel('Arquivo da ilustração').setInputFiles({ name: 'cenario.png', mimeType: 'image/png', buffer });
+  await page.getByLabel('Nome da ilustração').fill(name);
+  await page.getByRole('button', { name: 'Importar imagem', exact: true }).click();
+  const preview = page.getByRole('img', { name, exact: true });
+  await expect(preview).toBeVisible();
+  await expect(preview).toHaveJSProperty('naturalWidth', 240);
+  await page.screenshot({ path: '.local/qa-illustrations.png', fullPage: true });
+  await page.getByRole('button', { name: /Meus livros/ }).click();
+  await page.getByRole('button', { name: /Novo livro/ }).click();
+  await page.getByLabel('Título do livro').fill(name);
+  await page.getByLabel('Identificador (slug)').fill('illustration-' + Date.now());
+  await page.getByLabel('Asset de capa').selectOption({ label: name });
+  await expect(page.getByRole('img', { name: 'Prévia da capa selecionada' })).toHaveJSProperty('naturalWidth', 240);
+  await page.getByRole('button', { name: 'Criar livro', exact: true }).click();
+  await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('img', { name: 'Capa de ' + name })).toHaveJSProperty('naturalWidth', 240);
+});

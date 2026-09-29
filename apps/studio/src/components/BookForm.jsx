@@ -1,3 +1,4 @@
+import { AssetImage } from './AssetImage.jsx';
 import { Button } from './ui/Button.jsx';
 import { useId, useState } from "react";
 export function BookForm({
@@ -134,10 +135,10 @@ export function BookForm({
             ))}
         </select>
         <small>
-          A seleção usa assets já cadastrados. Importação visual virá em uma
-          próxima fase.
+          Importe imagens na Biblioteca e selecione uma capa disponível para este livro.
         </small>
       </label>
+      {cover && <AssetImage id={cover} alt="Prévia da capa selecionada" className="cover-preview" />}
       <div className="form-actions">
         {onCancel && (
           <Button type="button" className="button secondary" onClick={onCancel}>

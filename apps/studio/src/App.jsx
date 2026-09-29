@@ -1,3 +1,4 @@
+import { IllustrationImport } from './components/IllustrationImport.jsx';
 import { Toast } from './components/ui/Toast.jsx';
 import { Button } from './components/ui/Button.jsx';
 import { useCallback, useEffect, useState } from "react";
@@ -257,6 +258,8 @@ export function App({ user, onLogout }) {
           ) : section === "access" ? (
             <AccessManagement user={user} />
           ) : section === "library" ? (
+            <>
+            {can("library:write") && <IllustrationImport books={books} busy={busy} onImport={data => mutate("/internal/assets", "POST", data, false)} />}
             <Library
               canWrite={can("library:write")}
               items={items}
@@ -267,6 +270,7 @@ export function App({ user, onLogout }) {
                 mutate("/internal/library", "POST", input, false)
               }
             />
+            </>
           ) : (
             <>
               <div className="stats">

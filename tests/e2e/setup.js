@@ -9,6 +9,14 @@ export default async function setup() {
   try {
     const [[row]] = await pool.query('SELECT VERSION() AS version');
     if (!row.version.includes('MariaDB') || !row.version.startsWith(process.env.EXPECTED_DB_VERSION)) throw new Error('Versão de teste inesperada.');
+    // The guarded, isolated test database must not retain integration rows whose temporary files were removed.
+    const connection = await pool.getConnection();
+    try {
+      await connection.query('SET FOREIGN_KEY_CHECKS = 0');
+      for (const table of ['auth_sessions', 'users', 'book_status_history', 'library_items', 'pages', 'books', 'book_versions', 'assets', 'schema_migrations']) {
+        await connection.query('DROP TABLE IF EXISTS ??', [table]);
+      }
+    } finally { await connection.query('SET FOREIGN_KEY_CHECKS = 1'); connection.release(); }
     await migrate(pool);
     process.env.E2E_USERNAME = 'e2e-' + randomBytes(8).toString('hex');
     process.env.E2E_PASSWORD = randomBytes(24).toString('base64url');

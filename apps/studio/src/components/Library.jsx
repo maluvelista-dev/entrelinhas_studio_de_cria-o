@@ -1,3 +1,4 @@
+import { AssetImage } from './AssetImage.jsx';
 import { Button } from './ui/Button.jsx';
 import { BookOpen, UserRound, Shapes, Trees, AudioLines } from 'lucide-react';
 import { useState } from "react";
@@ -115,7 +116,7 @@ export function Library({
           </p>
         )}
         <p className="footnote">
-          Importação de arquivos e edição visual chegarão nas próximas fases.
+          Admin e Editor podem importar ilustrações na Biblioteca. A montagem de cenas virá na fase 6.
         </p>
       </section>
       <section className="panel catalog">
@@ -133,9 +134,9 @@ export function Library({
           <ul className="catalog-list">
             {items.map((item) => (
               <li key={item.id}>
-                <span className="asset-symbol">
+                {item.assetId && assets.find(asset => asset.id === item.assetId)?.mediaType.startsWith("image/") ? <AssetImage id={item.assetId} alt={item.name} className="library-thumbnail" /> : <span className="asset-symbol">
                   {(() => { const Icon = icons[item.kind]; return <Icon aria-hidden="true" size={20} />; })()}
-                </span>
+                </span>}
                 <div>
                   <strong>{item.name}</strong>
                   <small>
