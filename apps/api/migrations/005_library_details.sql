@@ -1,0 +1,3 @@
+ALTER TABLE library_items
+  ADD COLUMN description VARCHAR(5000) NOT NULL DEFAULT '',
+  ADD COLUMN revision INT NOT NULL DEFAULT 1 CHECK (revision > 0);

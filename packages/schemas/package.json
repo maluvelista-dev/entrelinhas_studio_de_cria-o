@@ -5,7 +5,8 @@
   "exports": {
     ".": "./src/index.js",
     "./scene": "./src/scene.js",
-    "./character": "./src/character.js"
+    "./character": "./src/character.js",
+    "./library": "./src/library.js"
   },
   "dependencies": {
     "zod": "4.6.5"

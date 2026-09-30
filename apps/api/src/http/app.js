@@ -57,7 +57,7 @@ export function createApp({ pool, storage, security = { origins: ['http://127.0.
   // Every internal route is authenticated before any resource lookup.
   const internal = express.Router();
   app.use('/api/internal', authenticated, internal);
-  for (const parameter of ['bookId', 'pageId', 'userId', 'assetId']) {
+  for (const parameter of ['bookId', 'pageId', 'userId', 'assetId', 'itemId']) {
     internal.param(parameter, (_req, _res, next, value) => {
       if (!idSchema.safeParse(value).success) throw new AppError(400, 'INVALID_ID', 'Identificador inválido.');
       next();
@@ -84,6 +84,8 @@ export function createApp({ pool, storage, security = { origins: ['http://127.0.
   }, serializeBook);
   route('get', '/library', 'library:read', () => library.list(), arrayOf(serializeLibraryItem));
   route('post', '/library', 'library:write', req => library.create(req.body), serializeLibraryItem, 201);
+  route('get', '/library/:itemId', 'library:read', req => library.get(req.params.itemId), serializeLibraryItem);
+  route('put', '/library/:itemId', 'library:write', req => library.update(req.params.itemId, req.body), serializeLibraryItem);
   internal.post('/assets', permit('library:write'), imageUpload((body, file) => assets.import(body, file), serializeAsset));
   // Binary image representation: fixed allowlisted MIME, authenticated ID lookup; never expose storage paths.
   internal.get('/assets/:assetId/content', permit('library:read'), async (req, res) => {

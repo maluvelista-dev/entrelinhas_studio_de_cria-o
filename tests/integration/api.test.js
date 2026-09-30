@@ -75,7 +75,7 @@ beforeAll(async () => {
     "INSERT INTO books(id,slug,created_at,updated_at) VALUES (?,'migration-marker',UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))",
     [id],
   );
-  expect(await migrate(pool)).toEqual(["002_status_history.sql", "003_access_control.sql", "004_image_dimensions.sql"]);
+  expect(await migrate(pool)).toEqual(["002_status_history.sql", "003_access_control.sql", "004_image_dimensions.sql", "005_library_details.sql"]);
   const [[marker]] = await pool.execute("SELECT id FROM books WHERE id = ?", [
     id,
   ]);
@@ -497,4 +497,47 @@ it('imports private images atomically and enforces scope, roles and content vali
   await pool.query("CREATE TRIGGER reject_image_item BEFORE INSERT ON library_items FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'test failure'");
   try { await upload().expect(500); } finally { await pool.query('DROP TRIGGER reject_image_item'); }
   expect(await readdir(path.join(root, 'illustrations'))).toEqual(before);
+});
+
+
+it('reads and edits catalog details without changing scope, leaking fields or overwriting another revision', async () => {
+  const endpoint = '/api/internal/library';
+  const created = (await request(app).post(endpoint).send({ name: 'Luna', kind: 'CHARACTER', description: 'Curiosa e gentil.' }).expect(201)).body;
+  expect(created).toMatchObject({ description: 'Curiosa e gentil.', revision: 1 });
+  const detailPath = endpoint + '/' + created.id;
+  await supertest(app).get(detailPath).expect(401);
+  await request(app).get(endpoint + '/invalid').expect(400);
+  await request(app).get(endpoint + '/' + randomUUID()).expect(404);
+  await request(app).get(detailPath + '?include=definition_json').expect(422);
+  const bytes = await sharp({ create: { width: 16, height: 16, channels: 4, background: '#cc7788' } }).png().toBuffer();
+  const upload = owner => request(app).post('/api/internal/assets').field('name', 'Luna image').field('kind', 'CHARACTER').field('ownerBookId', owner || '').attach('file', bytes, 'luna.png');
+  const image = (await upload().expect(201)).body;
+  const input = { name: 'Luna aventureira', description: '<script>texto literal</script>', assetId: image.id, revision: 1 };
+  const changed = (await request(app).put(detailPath).send(input).expect(200)).body;
+  expect(changed).toMatchObject({ ...input, revision: 2 });
+  expect(Object.keys(changed).sort()).toEqual(['id', 'name', 'kind', 'ownerBookId', 'assetId', 'schemaVersion', 'description', 'revision'].sort());
+  expect((await request(createApp({ pool, storage })).get(detailPath).expect(200)).body).toEqual(changed);
+  await request(app).put(detailPath).send(input).expect(409);
+  await request(app).put(detailPath).send({ ...input, revision: 2, kind: 'OBJECT' }).expect(422);
+  await request(app).put(detailPath).send({ ...input, revision: 2, ownerBookId: null }).expect(422);
+  await request(app).put(detailPath).send({ ...input, revision: 2, description: 'x'.repeat(5001) }).expect(422);
+  const book = await createBook();
+  const exclusive = (await upload(book.id).expect(201)).body;
+  await request(app).put(detailPath).send({ ...input, revision: 2, assetId: exclusive.id }).expect(422);
+  const scoped = (await request(app).post(endpoint).send({ name: 'Cenário exclusivo', kind: 'BACKGROUND', ownerBookId: book.id }).expect(201)).body;
+  await request(app).post(base + '/' + book.id + '/transitions').send({ revision: book.revision, status: 'REVIEW' }).expect(200);
+  await request(app).put(endpoint + '/' + scoped.id).send({ ...input, assetId: null }).expect(409);
+  const removed = (await request(app).put(detailPath).send({ ...input, revision: 2, assetId: null }).expect(200)).body;
+  expect(removed.assetId).toBeNull();
+  await request(app).get('/api/internal/assets/' + image.id + '/content').expect(200);
+  for (const role of ['EDITOR', 'REVIEWER']) {
+    const username = 'catalog-' + role.toLowerCase();
+    await createAuthService(pool).createUser({ username, displayName: role, role, password: testPassword });
+    const fresh = createApp({ pool, storage });
+    const login = await supertest(fresh).post('/api/auth/login').set('Origin', 'http://127.0.0.1:5173').send({ username, password: testPassword }).expect(200);
+    const cookie = login.headers['set-cookie'][0].split(';')[0];
+    await supertest(fresh).get(detailPath).set('Cookie', cookie).expect(200);
+    await supertest(fresh).put(detailPath).set('Cookie', cookie).set('Origin', 'http://127.0.0.1:5173')
+      .send({ ...input, revision: 3 }).expect(role === 'EDITOR' ? 200 : 403);
+  }
 });

@@ -74,6 +74,8 @@ export function serializeLibraryItem(item) {
     ownerBookId: item.ownerBookId,
     assetId: item.assetId,
     schemaVersion: item.schemaVersion,
+    description: item.description ?? '',
+    revision: item.revision ?? 1,
   };
 }
 export function serializeAsset(asset) {
