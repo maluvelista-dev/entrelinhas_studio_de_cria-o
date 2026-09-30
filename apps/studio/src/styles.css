@@ -233,3 +233,7 @@ footer { display: flex; justify-content: space-between; gap: var(--space-5); mar
 .cover-preview { width: 100%; max-height: 280px; object-fit: contain; background: var(--color-background); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
 .image-unavailable { display: grid; place-items: center; padding: var(--space-2); font-size: var(--font-small); color: var(--color-text-secondary); }
 @media(max-width:767px) { .upload-fields { grid-template-columns: 1fr; } }
+
+.library-tabs { margin-bottom: var(--space-6); flex-wrap: wrap; }
+.library-detail { padding: var(--space-6); }
+.catalog-open { border: 0; background: none; color: var(--color-text-primary); padding: 0; text-align: left; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }

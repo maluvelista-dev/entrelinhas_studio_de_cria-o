@@ -1,3 +1,5 @@
+import { IllustrationImport } from './IllustrationImport.jsx';
+import { LibraryDetail } from './LibraryDetail.jsx';
 import { AssetImage } from './AssetImage.jsx';
 import { Button } from './ui/Button.jsx';
 import { BookOpen, UserRound, Shapes, Trees, AudioLines } from 'lucide-react';
@@ -16,21 +18,44 @@ export function Library({
   busy,
   onCreate,
   canWrite = false,
+  onImport, onRead, onUpdate, dirty, onDirty,
 }) {
   const [name, setName] = useState("");
   const [kind, setKind] = useState("CHARACTER");
   const [ownerBookId, setOwner] = useState("");
   const [assetId, setAsset] = useState("");
+  const [description, setDescription] = useState('');
+  const [selected, setSelected] = useState(null);
+  const [reading, setReading] = useState(false);
+  const [detailLoad, setDetailLoad] = useState(0);
+  const [error, setError] = useState('');
+  const categories = { CHARACTER: 'Personagens', BACKGROUND: 'Cenários', OBJECT: 'Objetos', AUDIO: 'Áudios' };
+  function leave() { return !dirty || window.confirm('Descartar alterações ainda não salvas?'); }
+  function chooseKind(next) {
+    if (busy || reading || !leave()) return false;
+    onDirty(false); setSelected(null); setKind(next); setAsset(''); setName(''); setDescription(''); setError('');
+    return true;
+  }
+  async function open(id, check = true) {
+    if (busy || reading || (check && !leave())) return;
+    setReading(true); setError('');
+    try { setSelected(await onRead(id)); setDetailLoad(value => value + 1); onDirty(false); }
+    catch (failure) { setError(failure.message); }
+    finally { setReading(false); }
+  }
+  const visibleItems = items.filter(item => item.kind === kind);
   async function submit(event) {
     event.preventDefault();
     const ok = await onCreate({
       name,
+      description,
       kind,
       ownerBookId: ownerBookId || null,
       assetId: assetId || null,
     });
     if (ok) {
       setName("");
+      setDescription("");
       setAsset("");
     }
   }
@@ -40,6 +65,24 @@ export function Library({
       asset.mediaType.startsWith(kind === "AUDIO" ? "audio/" : "image/"),
   );
   return (
+    <>
+      <div className="tabs library-tabs" role="tablist" aria-label="Categorias da Biblioteca">
+        {Object.entries(categories).map(([value, label]) => <button key={value} id={'category-' + value} role="tab" aria-selected={kind === value} aria-controls="library-category" tabIndex={kind === value ? 0 : -1} disabled={busy || reading}
+          onKeyDown={event => {
+            const keys = Object.keys(categories); const index = keys.indexOf(value);
+            const next = event.key === 'ArrowRight' ? keys[(index + 1) % keys.length] : event.key === 'ArrowLeft' ? keys[(index + keys.length - 1) % keys.length] : event.key === 'Home' ? keys[0] : event.key === 'End' ? keys.at(-1) : null;
+            if (next) { event.preventDefault(); if (chooseKind(next)) document.getElementById('category-' + next)?.focus(); }
+          }}
+          onClick={() => chooseKind(value)}>{label} <span>({items.filter(item => item.kind === value).length})</span></button>)}
+      </div>
+      <div id="library-category" role="tabpanel" aria-labelledby={'category-' + kind}>
+      {error && <p role="alert" className="inline-error">{error}</p>}
+      {reading && <p role="status">Carregando cadastro…</p>}
+      {selected ? <LibraryDetail key={detailLoad} item={selected} assets={assets} busy={busy || reading}
+        editable={canWrite && (!selected.ownerBookId || books.find(book => book.id === selected.ownerBookId)?.status === 'DRAFT')}
+        onDirty={onDirty} onClose={() => { if (leave()) { setSelected(null); onDirty(false); } }} onReload={() => open(selected.id)}
+        onSave={async input => { if (await onUpdate(selected.id, input)) { onDirty(false); await open(selected.id, false); } }} /> : <>
+      {canWrite && kind !== 'AUDIO' && <IllustrationImport key={kind} fixedKind={kind} books={books} busy={busy} onImport={onImport} />}
     <div className="library-layout">
       <section className="panel library-form">
         <h2>Adicionar ao catálogo</h2>
@@ -61,8 +104,7 @@ export function Library({
               <select
                 value={kind}
                 onChange={(event) => {
-                  setKind(event.target.value);
-                  setAsset("");
+                  chooseKind(event.target.value);
                 }}
               >
                 {Object.entries(labels).map(([value, label]) => (
@@ -72,6 +114,7 @@ export function Library({
                 ))}
               </select>
             </label>
+            <label>Descrição do elemento<textarea rows={3} maxLength={5000} value={description} onChange={event => setDescription(event.target.value)} /></label>
             <label>
               Disponibilidade
               <select
@@ -121,10 +164,10 @@ export function Library({
       </section>
       <section className="panel catalog">
         <div className="section-heading">
-          <h2>Elementos da biblioteca</h2>
-          <span>{items.length} itens</span>
+          <h2>{categories[kind]}</h2>
+          <span>{visibleItems.length} itens</span>
         </div>
-        {!items.length ? (
+        {!visibleItems.length ? (
           <div className="empty small">
             <span className="empty-mark"><BookOpen aria-hidden="true" size={40} /></span>
             <h3>Um universo para criar</h3>
@@ -132,13 +175,13 @@ export function Library({
           </div>
         ) : (
           <ul className="catalog-list">
-            {items.map((item) => (
+            {visibleItems.map((item) => (
               <li key={item.id}>
                 {item.assetId && assets.find(asset => asset.id === item.assetId)?.mediaType.startsWith("image/") ? <AssetImage id={item.assetId} alt={item.name} className="library-thumbnail" /> : <span className="asset-symbol">
                   {(() => { const Icon = icons[item.kind]; return <Icon aria-hidden="true" size={20} />; })()}
                 </span>}
                 <div>
-                  <strong>{item.name}</strong>
+                  <button type="button" className="catalog-open" disabled={busy || reading} onClick={() => open(item.id)} aria-label={"Abrir " + item.name}>{item.name}</button>
                   <small>
                     {labels[item.kind]} ·{" "}
                     {item.ownerBookId
@@ -156,5 +199,8 @@ export function Library({
         )}
       </section>
     </div>
+    </>}
+    </div>
+    </>
   );
 }

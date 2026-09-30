@@ -1,11 +1,11 @@
 import { useRef, useState } from 'react';
 import { Upload } from 'lucide-react';
 import { Button } from './ui/Button.jsx';
-export function IllustrationImport({ books, busy, onImport }) {
+export function IllustrationImport({ books, busy, onImport, fixedKind }) {
   const picker = useRef(null);
   const [file, setFile] = useState(null);
   const [name, setName] = useState('');
-  const [kind, setKind] = useState('BACKGROUND');
+  const [kind, setKind] = useState(fixedKind || 'BACKGROUND');
   const [owner, setOwner] = useState('');
   const [error, setError] = useState('');
   async function submit(event) {
@@ -26,7 +26,7 @@ export function IllustrationImport({ books, busy, onImport }) {
           onChange={event => { const chosen = event.target.files?.[0] || null; setFile(chosen); setError(''); if (chosen && !name) setName(chosen.name.replace(/\.[^.]+$/, '').slice(0, 200)); }} />
           <small>PNG ou WebP estático · até 10 MB · até 4096 × 4096 pixels.</small></label>
         <label>Nome da ilustração<input required maxLength={200} value={name} onChange={event => setName(event.target.value)} /></label>
-        <label>Tipo da ilustração<select value={kind} onChange={event => setKind(event.target.value)}>
+        <label>Tipo da ilustração<select disabled={Boolean(fixedKind)} value={kind} onChange={event => setKind(event.target.value)}>
           <option value="BACKGROUND">Cenário</option><option value="CHARACTER">Personagem</option><option value="OBJECT">Objeto</option>
         </select></label>
         <label>Disponibilidade da ilustração<select value={owner} onChange={event => setOwner(event.target.value)}>

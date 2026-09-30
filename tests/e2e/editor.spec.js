@@ -81,6 +81,11 @@ test('administrador gerencia acessos e revisor permanece em consulta', async ({ 
   await expect(page.getByRole('button', { name: /Acessos/ })).toHaveCount(0);
   await page.getByRole('button', { name: /Biblioteca/ }).click();
   await expect(page.getByRole('button', { name: 'Cadastrar elemento' })).toBeDisabled();
+  await page.getByRole('button', { name: /^Abrir / }).first().click();
+  await expect(page.getByLabel('Nome do elemento')).toBeDisabled();
+  await expect(page.getByLabel('Descrição do elemento')).toBeDisabled();
+  await expect(page.getByLabel('Imagem do elemento')).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Salvar cadastro' })).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.length)).toBe(0);
   expect(await page.evaluate(() => document.cookie)).not.toContain('studio_session');
   await page.getByRole('button', { name: 'Sair', exact: true }).click();

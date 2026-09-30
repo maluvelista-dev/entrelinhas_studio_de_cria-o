@@ -1,4 +1,3 @@
-import { IllustrationImport } from './components/IllustrationImport.jsx';
 import { Toast } from './components/ui/Toast.jsx';
 import { Button } from './components/ui/Button.jsx';
 import { useCallback, useEffect, useState } from "react";
@@ -259,9 +258,12 @@ export function App({ user, onLogout }) {
             <AccessManagement user={user} />
           ) : section === "library" ? (
             <>
-            {can("library:write") && <IllustrationImport books={books} busy={busy} onImport={data => mutate("/internal/assets", "POST", data, false)} />}
             <Library
               canWrite={can("library:write")}
+              dirty={dirty} onDirty={setDirty}
+              onRead={id => api('/internal/library/' + id)}
+              onUpdate={(id, input) => mutate('/internal/library/' + id, 'PUT', input, false)}
+              onImport={data => mutate('/internal/assets', 'POST', data, false)}
               items={items}
               books={books}
               assets={assets}
