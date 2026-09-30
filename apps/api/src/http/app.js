@@ -1,3 +1,4 @@
+import { createRigService } from '../modules/library/rig.js';
 import { pipeline } from 'node:stream/promises';
 import { createAssetService } from '../modules/assets/service.js';
 import { imageUpload } from './upload.js';
@@ -10,12 +11,13 @@ import { createLibraryService } from '../modules/library/service.js';
 import { createAuthService, SESSION_LIFETIME_MS } from '../modules/auth/service.js';
 import { requireAccess, permit, sessionToken, createLoginLimiter } from './access.js';
 import { requirePermission } from '../modules/auth/permissions.js';
-import { serializeBook, serializeBookSummary, serializeUser, serializeLibraryItem, serializeAsset } from './serializers.js';
+import { serializeRig, serializeBook, serializeBookSummary, serializeUser, serializeLibraryItem, serializeAsset } from './serializers.js';
 
 export function createApp({ pool, storage, security = { origins: ['http://127.0.0.1:5173', 'http://localhost:5173'], secureCookies: false } }) {
   const app = express();
   const books = createBookService(pool, storage);
   const library = createLibraryService(pool, storage);
+  const rigs = createRigService(pool, storage);
   const auth = createAuthService(pool);
   const assets = createAssetService(pool, storage);
   const cookieName = security.secureCookies ? '__Host-studio_session' : 'studio_session';
@@ -86,6 +88,8 @@ export function createApp({ pool, storage, security = { origins: ['http://127.0.
   route('post', '/library', 'library:write', req => library.create(req.body), serializeLibraryItem, 201);
   route('get', '/library/:itemId', 'library:read', req => library.get(req.params.itemId), serializeLibraryItem);
   route('put', '/library/:itemId', 'library:write', req => library.update(req.params.itemId, req.body), serializeLibraryItem);
+  route('get', '/library/:itemId/rig', 'library:read', req => rigs.get(req.params.itemId), serializeRig);
+  route('put', '/library/:itemId/rig', 'library:write', req => rigs.update(req.params.itemId, req.body), serializeRig);
   internal.post('/assets', permit('library:write'), imageUpload((body, file) => assets.import(body, file), serializeAsset));
   // Binary image representation: fixed allowlisted MIME, authenticated ID lookup; never expose storage paths.
   internal.get('/assets/:assetId/content', permit('library:read'), async (req, res) => {

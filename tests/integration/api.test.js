@@ -541,3 +541,51 @@ it('reads and edits catalog details without changing scope, leaking fields or ov
       .send({ ...input, revision: 3 }).expect(role === 'EDITOR' ? 200 : 403);
   }
 });
+
+
+it('persists rigs with scoped images, hierarchies and anchors, sharing revisions with metadata', async () => {
+  const endpoint = '/api/internal/library';
+  const item = (await request(app).post(endpoint).send({ name: 'Rig Luna', kind: 'CHARACTER' }).expect(201)).body;
+  const url = endpoint + '/' + item.id + '/rig';
+  expect((await request(app).get(url).expect(200)).body.definition).toBeNull();
+  await supertest(app).get(url).expect(401);
+  const bytes = await sharp({ create: { width: 40, height: 80, channels: 4, background: '#aa77cc80' } }).png().toBuffer();
+  const asset = (await request(app).post('/api/internal/assets').field('name', 'Arm').field('kind', 'CHARACTER').attach('file', bytes, 'arm.png').expect(201)).body;
+  const root = { id: 'root', parentId: null, assetId: null, position: { x: 100, y: 100 } };
+  const arm = { id: 'arm', parentId: 'root', assetId: asset.id, position: { x: 40, y: 50 }, pivot: { x: 0.5, y: 0.1 }, rotation: 0.4 };
+  const view = { id: 'front', rootId: 'root', parts: [root, arm], anchors: [{ name: 'grip', partId: 'arm', coordinateSpace: 'normalized', position: { x: 0.5, y: 1 } }] };
+  const definition = { schemaVersion: 1, id: 'luna', name: 'Luna', width: 512, height: 512, perspectives: [view, { ...structuredClone(view), id: 'side' }] };
+  const saved = (await request(app).put(url).send({ revision: 1, definition }).expect(200)).body;
+  expect(saved.revision).toBe(2);
+  expect(saved.definition.perspectives[1].parts[1]).toMatchObject(arm);
+  expect(Object.keys(saved).sort()).toEqual(['id', 'revision', 'definition'].sort());
+  expect((await request(createApp({ pool, storage })).get(url).expect(200)).body).toEqual(saved);
+  await request(app).put(url).send({ revision: 1, definition }).expect(409);
+  await request(app).put(endpoint + '/' + item.id).send({ revision: 1, name: 'Old', description: '', assetId: null }).expect(409);
+  const invalid = structuredClone(definition); invalid.perspectives[0].parts[0].parentId = 'arm';
+  await request(app).put(url).send({ revision: 2, definition: invalid }).expect(422);
+  const external = structuredClone(definition); external.perspectives[0].parts[1].source = 'https://external.invalid/image.png';
+  await request(app).put(url).send({ revision: 2, definition: external }).expect(422);
+  const zero = structuredClone(definition); zero.perspectives[0].parts[1].scaleX = 0;
+  await request(app).put(url).send({ revision: 2, definition: zero }).expect(422);
+  const book = await createBook();
+  const scopedAsset = (await request(app).post('/api/internal/assets').field('name', 'Exclusive').field('kind', 'CHARACTER').field('ownerBookId', book.id).attach('file', bytes, 'exclusive.png').expect(201)).body;
+  const wrongScope = structuredClone(definition); wrongScope.perspectives[0].parts[1].assetId = scopedAsset.id;
+  await request(app).put(url).send({ revision: 2, definition: wrongScope }).expect(422);
+  expect((await request(app).get(url).expect(200)).body).toEqual(saved);
+  await request(app).put(endpoint + '/' + item.id).send({ revision: 2, name: 'Renamed Luna', description: 'Keeps rig', assetId: null }).expect(200);
+  expect((await request(app).get(url).expect(200)).body.definition).toEqual(saved.definition);
+  const scopedItem = (await request(app).post(endpoint).send({ name: 'Scoped rig', kind: 'CHARACTER', ownerBookId: book.id }).expect(201)).body;
+  await request(app).post(base + '/' + book.id + '/transitions').send({ revision: book.revision, status: 'REVIEW' }).expect(200);
+  await request(app).put(endpoint + '/' + scopedItem.id + '/rig').send({ revision: 1, definition }).expect(409);
+  const object = (await request(app).post(endpoint).send({ name: 'Object', kind: 'OBJECT' }).expect(201)).body;
+  await request(app).get(endpoint + '/' + object.id + '/rig').expect(404);
+  await request(app).put(endpoint + '/' + object.id + '/rig').send({ revision: 1, definition }).expect(404);
+  for (const role of ['EDITOR', 'REVIEWER']) {
+    const fresh = createApp({ pool, storage });
+    const login = await supertest(fresh).post('/api/auth/login').set('Origin', 'http://127.0.0.1:5173').send({ username: 'catalog-' + role.toLowerCase(), password: testPassword }).expect(200);
+    const cookie = login.headers['set-cookie'][0].split(';')[0];
+    await supertest(fresh).get(url).set('Cookie', cookie).expect(200);
+    await supertest(fresh).put(url).set('Cookie', cookie).set('Origin', 'http://127.0.0.1:5173').send({ revision: 3, definition }).expect(role === 'EDITOR' ? 200 : 403);
+  }
+});

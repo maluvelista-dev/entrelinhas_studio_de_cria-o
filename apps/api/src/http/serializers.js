@@ -1,3 +1,4 @@
+import { characterSchema } from '@studio/schemas/character';
 import { permissionsFor } from "../modules/auth/permissions.js";
 
 // Output allowlists: adding a database field must never automatically expand the API.
@@ -88,4 +89,9 @@ export function serializeAsset(asset) {
     height: asset.height ?? null,
     byteSize: asset.byteSize ?? null,
   };
+}
+
+// Strict schema is a recursive allowlist; no raw database JSON leaves this endpoint.
+export function serializeRig(value) {
+  return { id: value.id, revision: value.revision, definition: value.definition === null ? null : characterSchema.parse(value.definition) };
 }

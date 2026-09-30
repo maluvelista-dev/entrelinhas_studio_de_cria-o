@@ -10,7 +10,7 @@ export const sceneSchema = z.strictObject({
   entities: z.array(z.strictObject({
     id, parentId: id.nullable().default(null),
     kind: z.enum(['rectangle', 'ellipse', 'group', 'sprite']),
-    assetId: z.string().regex(/^[a-zA-Z][a-zA-Z0-9_-]{0,79}$/).optional(),
+    assetId: z.union([z.string().regex(/^[a-zA-Z][a-zA-Z0-9_-]{0,79}$/), z.uuid()]).optional(),
     width: z.number().finite().positive().max(4096),
     height: z.number().finite().positive().max(4096),
     color: z.string().regex(/^#[0-9a-fA-F]{6}$/),

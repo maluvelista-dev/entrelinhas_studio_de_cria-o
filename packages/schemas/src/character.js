@@ -15,7 +15,7 @@ export const characterSchema = z.strictObject({
   perspectives: z.array(z.strictObject({
     id, rootId: id,
     parts: z.array(z.strictObject({
-      id, parentId: id.nullable(), assetId: id.nullable(), position: point,
+      id, parentId: id.nullable(), assetId: z.union([id, z.uuid()]).nullable(), position: point,
       rotation: finite.default(0), scaleX: finite.default(1), scaleY: finite.default(1),
       pivot: pivot.default({ x: 0, y: 0 }), opacity: z.number().min(0).max(1).default(1),
       visible: z.boolean().default(true), zIndex: z.number().int().min(-1000).max(1000).default(0),
