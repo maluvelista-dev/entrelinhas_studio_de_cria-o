@@ -22,7 +22,7 @@ Migration 005_library_details.sql adiciona description vazia e revision 1 aos re
 
 ## Limites
 
-Sem exclusão de itens, edição de arquivos originais, mudança de escopo/categoria, rig persistido, poses ou montagem de cenas. Personagens, cenários e objetos compartilham o mesmo contrato de ficha básica.
+Sem exclusão de itens, edição de arquivos originais, mudança de escopo/categoria, poses ou montagem de cenas. Rig persistido foi adicionado na ampliação [CHARACTER_EDITOR.md](CHARACTER_EDITOR.md). Personagens, cenários e objetos compartilham o mesmo contrato de ficha básica.
 
 ## Verificação
 

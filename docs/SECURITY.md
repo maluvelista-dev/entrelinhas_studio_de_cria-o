@@ -94,3 +94,7 @@ Upload autenticado com validação e recodificação, leitura privada e DTOs lim
 ## Edição da Biblioteca
 
 Consulta e edição usam permissões library:read/write, DTOs explícitos, validação de escopo e revisão concorrente. Categoria e disponibilidade não são alteráveis por PUT; [detalhes](LIBRARY_DETAILS.md).
+
+## Estrutura de personagens
+
+GET/PUT de rig exigem permissões da Biblioteca, revisão compartilhada, validação estrita recursiva e assets cadastrados do escopo permitido. URLs externas e campos desconhecidos são recusados. [Detalhes](CHARACTER_EDITOR.md).

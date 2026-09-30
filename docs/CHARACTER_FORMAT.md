@@ -1,6 +1,6 @@
 # Formato de personagem — Fase 3, schemaVersion 1
 
-Contrato implementado em packages/schemas/src/character.js, independente da Library e do documento persistido de página. Nesta fase não existe endpoint para salvar/importar o manifesto; a visualização utiliza definição técnica versionada com o código.
+Contrato implementado em packages/schemas/src/character.js, independente da Library e do documento persistido de página. O editor autorizado em 30/09/2026 salva o manifesto na Biblioteca; a tela de validação continua usando uma fixture técnica. Consulte [CHARACTER_EDITOR.md](CHARACTER_EDITOR.md).
 
 ## Definição e partes
 
@@ -8,7 +8,7 @@ Campos: schemaVersion, id, name, width, height e perspectives. Dimensões lógic
 
 Cada perspectiva contém uma a 128 partes. Toda parte declara id, parentId (null somente no root), assetId (null para grupo) e position {x,y}. Defaults: rotation=0 em radianos, scaleX/scaleY=1, pivot={x:0,y:0}, opacity=1, visible=true e zIndex=0. Pivot é relativo à dimensão intrínseca do asset antes de escala/rotação. Grupos usam as dimensões lógicas da definição.
 
-Campos desconhecidos são rejeitados. IDs não contêm pontos ou barras; são nomes lógicos, nunca paths. Rejeitar versões desconhecidas, duplicados, partes desconectadas, parent ausente, ciclos, pivôs fora de 0–1 e números não finitos. A instanciação também rejeita assets ausentes e transforms acumulados fora dos limites.
+Campos desconhecidos são rejeitados. IDs de partes/perspectivas não contêm pontos ou barras; são nomes lógicos, nunca paths. AssetId aceita também UUID cadastrado; o editor persistido exige UUID para imagens. Rejeitar versões desconhecidas, duplicados, partes desconectadas, parent ausente, ciclos, pivôs fora de 0–1 e números não finitos. A instanciação também rejeita assets ausentes e transforms acumulados fora dos limites.
 
 ## Instância e hierarquia
 
@@ -30,9 +30,9 @@ Manifestos contêm apenas assetId. Catálogo controlado pela aplicação fornece
 
 AssetManager recebe loader/destroy por injeção, deduplica carregamentos simultâneos, permite retry após falha e libera recursos inclusive quando o carregamento termina após desmontagem. O adaptador browser aceita PNG/WebP cadastrados da mesma origem e imagens base64 PNG/WebP embarcadas pela aplicação. Não recebe URLs do manifesto.
 
-Cada manager é dono de suas texturas, sem invalidar outros previews pelo cache global do Pixi. Destruir sprites antes do manager. Imagens decodificadas são limitadas a 4096×4096; limites de bytes/upload precisam ser definidos antes do importador.
+Cada manager é dono de suas texturas, sem invalidar outros previews pelo cache global do Pixi. Destruir sprites antes do manager. Imagens decodificadas são limitadas a 4096×4096; o importador aplica os limites descritos em ILLUSTRATIONS.md.
 
-Um pack futuro poderá conter character.json e front/side/back. ZIP, upload, extração, paths externos e rigging visual não foram implementados. Publicações futuras devem congelar definição e assets utilizados.
+Um pack futuro poderá conter character.json e front/side/back. ZIP, extração e paths externos não foram implementados. Upload individual de imagens e rigging visual estão disponíveis conforme ILLUSTRATIONS.md e CHARACTER_EDITOR.md. Publicações futuras devem congelar definição e assets utilizados.
 
 ## Visualização de validação
 

@@ -79,3 +79,7 @@ Importação PNG/WebP, Biblioteca autenticada e capas implementadas durante a Fa
 ## Ampliação autorizada — organização e edição da Biblioteca
 
 Fichas com consulta e edição de nome, descrição e imagem; áreas Personagens, Cenários e Objetos, mantendo Áudios para o catálogo existente. Contrato e limites em [LIBRARY_DETAILS.md](LIBRARY_DETAILS.md). Mantém Fase 3 e Tema A.
+
+## Ampliação autorizada — edição de estrutura de personagens
+
+Editor persistido de perspectivas, partes, hierarquia, pivôs e anchors em [CHARACTER_EDITOR.md](CHARACTER_EDITOR.md). Mantém Tema A e renderização PixiJS. Não inicia animação/timeline ou montagem de cenas.

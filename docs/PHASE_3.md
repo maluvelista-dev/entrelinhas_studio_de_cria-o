@@ -49,8 +49,8 @@ Inspeção automatizada e visual de capturas não substitui aceite humano.
 
 ## Limitações e riscos
 
-- Definição técnica em memória: não importa/salva packs ou rigs na Biblioteca. Persistência de páginas permanece inalterada.
-- Sem inspector de edição, animação, interpolação, export JSON pela UI, timeline ou interações. Permanecem nas suas fases.
+- A ampliação autorizada em 30/09/2026 adicionou o editor e a persistência de rigs na Biblioteca: [CHARACTER_EDITOR.md](CHARACTER_EDITOR.md). Packs e persistência de cenas de página continuam fora do escopo.
+- Inspector de partes/pivôs/anchors disponível na ampliação. Animação, interpolação, export JSON pela UI, timeline e interações permanecem nas suas fases.
 - Fixture geométrica com PNG mínimo, sem arte final.
 - WebGL obrigatório; falhas de imagem/render apresentam erro, sem fallback silencioso.
 - Cache com escopo de visualização; uma futura cena com muitos personagens deverá compartilhar um manager por cena. Sem cache offline.

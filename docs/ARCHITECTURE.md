@@ -84,4 +84,8 @@ React cria/destrói o renderer em effect, observa resize e mostra estado de carr
 
 Character definitions e instances são contratos separados. O schema conhece partes/anchors, sem React ou renderer. createCharacter resolve assets cadastrados e transforma as partes em entidades da cena; resolveAnchor usa as mesmas matrizes world. O renderer conhece group/sprite e formas; texturas são fornecidas externamente. AssetManager possui cache e ciclo de vida por preview, com loader injetado para testes. O adaptador browser usa Texture.from com imagens próprias, sem destruir recursos de outro preview via cache global.
 
-Studio controla seleção de perspectiva/debug e desmonta renderer antes do descarte das texturas. O documento persistido de página e as rotas internas permanecem inalterados; edição/importação de rigs dependerá de evolução explícita, com autorização e serializer, quando implementada.
+Studio controla seleção de perspectiva/debug e desmonta renderer antes do descarte das texturas. O documento persistido de página permanece inalterado. A ampliação autorizada de edição de rigs adiciona rotas próprias com permissões, revisão e serializer; consulte CHARACTER_EDITOR.md.
+
+## Editor de personagem persistido
+
+A ampliação de 30/09/2026 salva rigs em library_items.definition_json com a revisão compartilhada do cadastro. API valida o modelo puro via createCharacter, sem renderer ou dependência de browser. Studio envia comandos; PixiJS desenha os sprites e uma camada SVG recebe manipulação de pivôs/anchors usando matrizes do Engine. [Contrato e limites](CHARACTER_EDITOR.md).
