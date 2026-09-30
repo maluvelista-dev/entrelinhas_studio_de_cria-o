@@ -90,3 +90,7 @@ Não há upload HTTP ou endpoint para excluir assets. Storage é infraestrutura 
 ## Dimensões de imagens
 
 004_image_dimensions.sql adiciona width/height opcionais aos assets, preservando registros anteriores. Novas importações gravam dimensões validadas. Ver [importação de ilustrações](ILLUSTRATIONS.md).
+
+## Fichas da Biblioteca
+
+005_library_details.sql adiciona descrição e revisão com valores padrão para cadastros existentes. Testada nos dois MariaDBs e aplicada ao desenvolvimento; [contrato](LIBRARY_DETAILS.md).

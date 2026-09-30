@@ -90,3 +90,7 @@ Acesso remoto ainda depende de revisão de implantação: HTTPS/reverse proxy, o
 ## Ilustrações
 
 Upload autenticado com validação e recodificação, leitura privada e DTOs limitados: [contrato e limites operacionais](ILLUSTRATIONS.md).
+
+## Edição da Biblioteca
+
+Consulta e edição usam permissões library:read/write, DTOs explícitos, validação de escopo e revisão concorrente. Categoria e disponibilidade não são alteráveis por PUT; [detalhes](LIBRARY_DETAILS.md).

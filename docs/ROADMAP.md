@@ -75,3 +75,7 @@ Character system implementado e disponível para aceite em [PHASE_3.md](PHASE_3.
 ## Ampliação autorizada — importação de ilustrações
 
 Importação PNG/WebP, Biblioteca autenticada e capas implementadas durante a Fase 3. Contrato, limites e validação em [ILLUSTRATIONS.md](ILLUSTRATIONS.md). Não inicia a Fase 4 nem antecipa montagem de cenas.
+
+## Ampliação autorizada — organização e edição da Biblioteca
+
+Fichas com consulta e edição de nome, descrição e imagem; áreas Personagens, Cenários e Objetos, mantendo Áudios para o catálogo existente. Contrato e limites em [LIBRARY_DETAILS.md](LIBRARY_DETAILS.md). Mantém Fase 3 e Tema A.
