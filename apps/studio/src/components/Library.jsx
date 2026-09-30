@@ -1,3 +1,4 @@
+import { RigEditor } from './RigEditor.jsx';
 import { IllustrationImport } from './IllustrationImport.jsx';
 import { LibraryDetail } from './LibraryDetail.jsx';
 import { AssetImage } from './AssetImage.jsx';
@@ -18,7 +19,7 @@ export function Library({
   busy,
   onCreate,
   canWrite = false,
-  onImport, onRead, onUpdate, dirty, onDirty,
+  onImport, onRead, onUpdate, onRigUpdate, dirty, onDirty,
 }) {
   const [name, setName] = useState("");
   const [kind, setKind] = useState("CHARACTER");
@@ -26,6 +27,7 @@ export function Library({
   const [assetId, setAsset] = useState("");
   const [description, setDescription] = useState('');
   const [selected, setSelected] = useState(null);
+  const [rigOpen, setRigOpen] = useState(false);
   const [reading, setReading] = useState(false);
   const [detailLoad, setDetailLoad] = useState(0);
   const [error, setError] = useState('');
@@ -33,7 +35,7 @@ export function Library({
   function leave() { return !dirty || window.confirm('Descartar alterações ainda não salvas?'); }
   function chooseKind(next) {
     if (busy || reading || !leave()) return false;
-    onDirty(false); setSelected(null); setKind(next); setAsset(''); setName(''); setDescription(''); setError('');
+    onDirty(false); setSelected(null); setRigOpen(false); setKind(next); setAsset(''); setName(''); setDescription(''); setError('');
     return true;
   }
   async function open(id, check = true) {
@@ -78,7 +80,10 @@ export function Library({
       <div id="library-category" role="tabpanel" aria-labelledby={'category-' + kind}>
       {error && <p role="alert" className="inline-error">{error}</p>}
       {reading && <p role="status">Carregando cadastro…</p>}
-      {selected ? <LibraryDetail key={detailLoad} item={selected} assets={assets} busy={busy || reading}
+      {selected ? rigOpen ? <RigEditor key={selected.id} item={selected} assets={assets} busy={busy || reading} dirty={dirty} onDirty={onDirty}
+        editable={canWrite && (!selected.ownerBookId || books.find(book => book.id === selected.ownerBookId)?.status === 'DRAFT')}
+        onSave={input => onRigUpdate(selected.id, input)} onBack={async () => { if (!leave()) return; onDirty(false); setRigOpen(false); await open(selected.id, false); }} /> : <LibraryDetail key={detailLoad} item={selected} assets={assets} busy={busy || reading}
+        onRigOpen={() => { if (leave()) { onDirty(false); setRigOpen(true); } }}
         editable={canWrite && (!selected.ownerBookId || books.find(book => book.id === selected.ownerBookId)?.status === 'DRAFT')}
         onDirty={onDirty} onClose={() => { if (leave()) { setSelected(null); onDirty(false); } }} onReload={() => open(selected.id)}
         onSave={async input => { if (await onUpdate(selected.id, input)) { onDirty(false); await open(selected.id, false); } }} /> : <>

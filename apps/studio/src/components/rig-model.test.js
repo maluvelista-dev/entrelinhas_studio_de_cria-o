@@ -1,0 +1,20 @@
+import { test, expect } from 'vitest';
+import { localToWorld, resolveAnchor } from '@studio/engine';
+import { descendants, newDefinition, newPart, previewRig, pivotAt } from './rig-model.js';
+const assetId = '12345678-1234-4234-8234-123456789abc';
+test('visual pivot editing preserves artwork and child anchors under rotated, mirrored parents', () => {
+  const definition = newDefinition({ id: '12345678-1234-4234-8234-123456789def', name: 'Luna' });
+  const view = definition.perspectives[0];
+  Object.assign(view.parts[0], { rotation: 0.6, scaleX: -1.5, position: { x: 400, y: 300 } });
+  view.parts.push({ ...newPart('arm', 'root'), assetId, rotation: 0.4, scaleX: 2, scaleY: 0.5 }, { ...newPart('hand', 'arm'), position: { x: 20, y: 80 } });
+  view.anchors.push({ name: 'grip', partId: 'hand', position: { x: 0, y: 0 }, coordinateSpace: 'local' });
+  const assets = [{ id: assetId, width: 100, height: 200 }];
+  const before = previewRig(definition, 'front', assets);
+  const node = before.nodes.find(node => node.partId === 'arm');
+  view.parts[1] = pivotAt(view.parts[1], node, localToWorld({ x: 25, y: 100 }, node.world));
+  expect(view.parts[1].pivot.x).toBeCloseTo(0.25); expect(view.parts[1].pivot.y).toBeCloseTo(0.5);
+  const after = previewRig(definition, 'front', assets);
+  const oldAnchor = resolveAnchor(before, 'editor.grip'), newAnchor = resolveAnchor(after, 'editor.grip');
+  expect(newAnchor.x).toBeCloseTo(oldAnchor.x); expect(newAnchor.y).toBeCloseTo(oldAnchor.y);
+  expect(descendants(view, 'arm')).toEqual(new Set(['arm', 'hand']));
+});

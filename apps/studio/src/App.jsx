@@ -261,6 +261,7 @@ export function App({ user, onLogout }) {
             <Library
               canWrite={can("library:write")}
               dirty={dirty} onDirty={setDirty}
+              onRigUpdate={(id, input) => mutate('/internal/library/' + id + '/rig', 'PUT', input, false)}
               onRead={id => api('/internal/library/' + id)}
               onUpdate={(id, input) => mutate('/internal/library/' + id, 'PUT', input, false)}
               onImport={data => mutate('/internal/assets', 'POST', data, false)}
