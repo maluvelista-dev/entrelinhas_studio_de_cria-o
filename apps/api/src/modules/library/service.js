@@ -8,7 +8,7 @@ import { assertEditable } from '../books/rules.js';
 export async function assertAssetReference(connection, storage, assetId, ownerBookId, mediaPrefix) {
   if (!assetId) return;
   const [[asset]] = await connection.execute('SELECT * FROM assets WHERE id = ?', [assetId]);
-  if (!asset || (asset.owner_book_id !== null && asset.owner_book_id !== ownerBookId) ||
+  if (!asset || asset.owner_character_id || (asset.owner_book_id !== null && asset.owner_book_id !== ownerBookId) ||
       (mediaPrefix && !asset.media_type.startsWith(mediaPrefix))) {
     throw new AppError(422, 'INVALID_ASSET', 'Asset inexistente, incompatível ou pertencente a outro livro.');
   }
@@ -46,7 +46,7 @@ export function createLibraryService(pool, storage) {
     },
     async assets() {
       const [rows] = await pool.query(`SELECT id, original_name AS name, media_type AS mediaType,
-        owner_book_id AS ownerBookId, width, height, byte_size AS byteSize FROM assets ORDER BY original_name`);
+        owner_book_id AS ownerBookId, width, height, byte_size AS byteSize FROM assets WHERE owner_character_id IS NULL ORDER BY original_name`);
       return rows;
     },
     async create(raw) {

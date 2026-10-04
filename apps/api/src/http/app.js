@@ -31,7 +31,7 @@ export function createApp({ pool, storage, security = { origins: ['http://127.0.
       if (req.get('sec-fetch-site') === 'cross-site' || !security.origins.includes(req.get('origin'))) {
         return next(new AppError(403, 'ORIGIN_DENIED', 'Origem não autorizada.'));
       }
-      if (!(req.method === 'POST' && req.path === '/api/internal/assets' && req.is('multipart/form-data')) && !req.is('application/json')) return next(new AppError(415, 'JSON_REQUIRED', 'Use conteúdo JSON.'));
+      if (!(req.method === 'POST' && (req.path === '/api/internal/assets' || /^\/api\/internal\/library\/[0-9a-f-]{36}\/rig\/[a-zA-Z][a-zA-Z0-9_-]{0,79}\/[a-zA-Z][a-zA-Z0-9_-]{0,79}\/image$/.test(req.path)) && req.is('multipart/form-data')) && !req.is('application/json')) return next(new AppError(415, 'JSON_REQUIRED', 'Use conteúdo JSON.'));
     }
     next();
   });
@@ -90,6 +90,7 @@ export function createApp({ pool, storage, security = { origins: ['http://127.0.
   route('put', '/library/:itemId', 'library:write', req => library.update(req.params.itemId, req.body), serializeLibraryItem);
   route('get', '/library/:itemId/rig', 'library:read', req => rigs.get(req.params.itemId), serializeRig);
   route('put', '/library/:itemId/rig', 'library:write', req => rigs.update(req.params.itemId, req.body), serializeRig);
+  internal.post('/library/:itemId/rig/:perspectiveId/:partId/image', permit('library:write'), imageUpload((body, file, req) => rigs.upload(req.params.itemId, req.params.perspectiveId, req.params.partId, body, file), serializeRig, { fieldSize: 256 * 1024 }));
   internal.post('/assets', permit('library:write'), imageUpload((body, file) => assets.import(body, file), serializeAsset));
   // Binary image representation: fixed allowlisted MIME, authenticated ID lookup; never expose storage paths.
   internal.get('/assets/:assetId/content', permit('library:read'), async (req, res) => {

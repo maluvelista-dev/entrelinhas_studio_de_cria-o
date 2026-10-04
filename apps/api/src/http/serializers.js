@@ -93,5 +93,5 @@ export function serializeAsset(asset) {
 
 // Strict schema is a recursive allowlist; no raw database JSON leaves this endpoint.
 export function serializeRig(value) {
-  return { id: value.id, revision: value.revision, definition: value.definition === null ? null : characterSchema.parse(value.definition) };
+  return { id: value.id, revision: value.revision, assets: (value.assets || []).map(asset => ({ ...serializeAsset(asset), ownerCharacterId: asset.ownerCharacterId, perspectiveId: asset.perspectiveId, partId: asset.partId })), definition: value.definition === null ? null : characterSchema.parse(value.definition) };
 }

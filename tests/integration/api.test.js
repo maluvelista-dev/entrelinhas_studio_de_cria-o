@@ -75,7 +75,7 @@ beforeAll(async () => {
     "INSERT INTO books(id,slug,created_at,updated_at) VALUES (?,'migration-marker',UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))",
     [id],
   );
-  expect(await migrate(pool)).toEqual(["002_status_history.sql", "003_access_control.sql", "004_image_dimensions.sql", "005_library_details.sql"]);
+  expect(await migrate(pool)).toEqual(["002_status_history.sql", "003_access_control.sql", "004_image_dimensions.sql", "005_library_details.sql", "006_character_images.sql"]);
   const [[marker]] = await pool.execute("SELECT id FROM books WHERE id = ?", [
     id,
   ]);
@@ -558,7 +558,7 @@ it('persists rigs with scoped images, hierarchies and anchors, sharing revisions
   const saved = (await request(app).put(url).send({ revision: 1, definition }).expect(200)).body;
   expect(saved.revision).toBe(2);
   expect(saved.definition.perspectives[1].parts[1]).toMatchObject(arm);
-  expect(Object.keys(saved).sort()).toEqual(['id', 'revision', 'definition'].sort());
+  expect(Object.keys(saved).sort()).toEqual(['id', 'revision', 'definition', 'assets'].sort());
   expect((await request(createApp({ pool, storage })).get(url).expect(200)).body).toEqual(saved);
   await request(app).put(url).send({ revision: 1, definition }).expect(409);
   await request(app).put(endpoint + '/' + item.id).send({ revision: 1, name: 'Old', description: '', assetId: null }).expect(409);
@@ -588,4 +588,53 @@ it('persists rigs with scoped images, hierarchies and anchors, sharing revisions
     await supertest(fresh).get(url).set('Cookie', cookie).expect(200);
     await supertest(fresh).put(url).set('Cookie', cookie).set('Origin', 'http://127.0.0.1:5173').send({ revision: 3, definition }).expect(role === 'EDITOR' ? 200 : 403);
   }
+});
+
+
+it('uploads part images inside the character, atomically persisting perspective and hierarchy without catalog pollution', async () => {
+  const endpoint = '/api/internal/library';
+  const item = (await request(app).post(endpoint).send({ name: 'Upload rig', kind: 'CHARACTER' }).expect(201)).body;
+  const other = (await request(app).post(endpoint).send({ name: 'Other rig', kind: 'CHARACTER' }).expect(201)).body;
+  const rootPart = { id: 'root', parentId: null, assetId: null, position: { x: 0, y: 0 } };
+  const body = { id: 'body', parentId: 'root', assetId: null, position: { x: 100, y: 100 } };
+  const definition = { schemaVersion: 1, id: 'rig', name: 'Upload rig', width: 512, height: 512, perspectives: [
+    { id: 'front', rootId: 'root', parts: [rootPart, body], anchors: [] },
+    { id: 'side', rootId: 'root', parts: [structuredClone(rootPart), structuredClone(body)], anchors: [] },
+  ] };
+  const bytes = await sharp({ create: { width: 64, height: 80, channels: 4, background: '#ff889980' } }).png().toBuffer();
+  const url = endpoint + '/' + item.id + '/rig/front/body/image';
+  const upload = (revision, value = definition, application = app) => request(application).post(url).field('revision', String(revision)).field('definition', JSON.stringify(value)).attach('file', bytes, 'body.png');
+  const count = (await request(app).get(endpoint)).body.length;
+  const saved = (await upload(1).expect(201)).body;
+  expect(saved.revision).toBe(2); expect(saved.assets).toHaveLength(1);
+  const image = saved.assets[0];
+  expect(image).toMatchObject({ ownerCharacterId: item.id, perspectiveId: 'front', partId: 'body', width: 64, height: 80 });
+  expect(image).not.toHaveProperty('storage_key'); expect(image).not.toHaveProperty('checksum');
+  expect(saved.definition.perspectives[0].parts[1].assetId).toBe(image.id);
+  expect(saved.definition.perspectives[1].parts[1].assetId).toBeNull();
+  expect((await request(app).get(endpoint)).body).toHaveLength(count);
+  expect((await request(app).get('/api/internal/assets')).body.some(asset => asset.id === image.id)).toBe(false);
+  expect((await request(createApp({ pool, storage })).get(endpoint + '/' + item.id + '/rig')).body).toEqual(saved);
+  await supertest(app).get('/api/internal/assets/' + image.id + '/content').expect(401);
+  await request(app).get('/api/internal/assets/' + image.id + '/content').expect(200);
+  await request(app).put(endpoint + '/' + other.id + '/rig').send({ revision: 1, definition: saved.definition }).expect(422);
+  await request(app).post(endpoint).send({ name: 'Leak', kind: 'OBJECT', assetId: image.id }).expect(422);
+  await request(app).post(base).send({ title: 'Leak', slug: 'leak-' + randomUUID(), cover: image.id }).expect(422);
+  await upload(1).expect(409);
+  expect((await request(app).get(endpoint + '/' + item.id + '/rig')).body).toEqual(saved);
+  await request(app).post(url.replace('/front/body/', '/front/missing/')).field('revision', '2').field('definition', JSON.stringify(definition)).attach('file', bytes, 'body.png').expect(422);
+  await request(app).post(url).field('revision', '2').field('definition', '{bad').attach('file', bytes, 'body.png').expect(400);
+  const { readdir } = await import('node:fs/promises');
+  const directory = path.join(root, 'characters', item.id), before = await readdir(directory);
+  await pool.query("CREATE TRIGGER fail_rig_upload BEFORE UPDATE ON library_items FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'test failure'");
+  try { await upload(2, saved.definition).expect(500); } finally { await pool.query('DROP TRIGGER fail_rig_upload'); }
+  expect(await readdir(directory)).toEqual(before);
+  expect((await request(app).get(endpoint + '/' + item.id + '/rig')).body).toEqual(saved);
+  const fresh = createApp({ pool, storage });
+  const login = await supertest(fresh).post('/api/auth/login').set('Origin', 'http://127.0.0.1:5173').send({ username: 'catalog-reviewer', password: testPassword }).expect(200);
+  await supertest(fresh).post(url).set('Origin', 'http://127.0.0.1:5173').set('Cookie', login.headers['set-cookie'][0].split(';')[0]).attach('file', bytes, 'body.png').expect(403);
+  const book = await createBook();
+  const exclusive = (await request(app).post(endpoint).send({ name: 'Exclusive rig', kind: 'CHARACTER', ownerBookId: book.id })).body;
+  await request(app).post(base + '/' + book.id + '/transitions').send({ revision: book.revision, status: 'REVIEW' }).expect(200);
+  await request(app).post(url.replace(item.id, exclusive.id)).field('revision', '1').field('definition', JSON.stringify(definition)).attach('file', bytes, 'body.png').expect(409);
 });

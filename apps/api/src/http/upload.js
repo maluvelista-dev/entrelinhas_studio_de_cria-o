@@ -1,11 +1,11 @@
 import multer from 'multer';
 import { AppError } from '../errors.js';
 import { IMAGE_BYTE_LIMIT } from '../modules/assets/image.js';
-export function imageUpload(handler, serialize) {
+let active = 0;
+export function imageUpload(handler, serialize, { fieldSize = 1024 } = {}) {
   const parse = multer({ storage: multer.memoryStorage(), limits: {
-    fileSize: IMAGE_BYTE_LIMIT, files: 1, fields: 3, parts: 4, fieldSize: 1024, fieldNameSize: 50,
+    fileSize: IMAGE_BYTE_LIMIT, files: 1, fields: 3, parts: 4, fieldSize, fieldNameSize: 50,
   } }).single('file');
-  let active = 0;
   return async (req, res) => {
     if (!req.is('multipart/form-data')) throw new AppError(415, 'MULTIPART_REQUIRED', 'Envie a imagem usando multipart/form-data.');
     if (active >= 2) throw new AppError(429, 'UPLOAD_BUSY', 'Há importações em andamento. Tente novamente em instantes.');
@@ -13,7 +13,7 @@ export function imageUpload(handler, serialize) {
     try {
       await new Promise((resolve, reject) => parse(req, res, error => error ? reject(error) : resolve()));
       if (req.aborted) return;
-      res.status(201).json(serialize(await handler(req.body, req.file)));
+      res.status(201).json(serialize(await handler(req.body, req.file, req)));
     } catch (error) {
       if (error instanceof multer.MulterError) throw new AppError(error.code === 'LIMIT_FILE_SIZE' ? 413 : 422,
         'INVALID_UPLOAD', error.code === 'LIMIT_FILE_SIZE' ? 'A imagem deve ter até 10 MB.' : 'Envie um único arquivo e somente os campos permitidos.');
