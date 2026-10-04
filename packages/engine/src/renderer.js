@@ -10,6 +10,7 @@ export async function createSceneRenderer(host, input, { textures = new Map() } 
     preference: 'webgl', preserveDrawingBuffer: true });
   let destroyed = false;
   let current;
+  let activeNodes = new Map();
   const root = new Container();
   app.stage.addChild(root);
   app.canvas.setAttribute('aria-label', 'Cena de validação do Engine');
@@ -45,7 +46,7 @@ export async function createSceneRenderer(host, input, { textures = new Map() } 
       }
     } catch (error) { container.destroy({ children: true }); throw error; }
     for (const child of root.removeChildren()) child.destroy({ children: true });
-    root.addChild(container); current = next.scene;
+    root.addChild(container); current = next.scene; activeNodes = nodes;
     app.renderer.background.color = current.background;
     resize(app.screen.width, app.screen.height);
   }
@@ -60,7 +61,14 @@ export async function createSceneRenderer(host, input, { textures = new Map() } 
   }
   try { load(prepared.scene); }
   catch (error) { app.destroy({ removeView: true }, { children: true }); throw error; }
-  return { load, resize, destroy() {
+  return { load, resize, applyTransforms(transforms) {
+    if (destroyed) throw new Error('Renderer encerrado.');
+    for (const transform of transforms) {
+      const node = activeNodes.get(transform.id); if (!node) throw new Error('Parte de animação ausente.');
+      node.position.set(transform.x, transform.y); node.rotation = transform.rotation; node.scale.set(transform.scaleX, transform.scaleY); node.alpha = transform.opacity;
+    }
+    app.render();
+  }, destroy() {
     if (destroyed) return;
     destroyed = true;
     app.destroy({ removeView: true }, { children: true });

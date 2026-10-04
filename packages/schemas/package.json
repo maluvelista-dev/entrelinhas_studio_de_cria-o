@@ -6,7 +6,9 @@
     ".": "./src/index.js",
     "./scene": "./src/scene.js",
     "./character": "./src/character.js",
-    "./library": "./src/library.js"
+    "./library": "./src/library.js",
+    "./motion": "./src/motion.js",
+    "./page": "./src/page.js"
   },
   "dependencies": {
     "zod": "4.6.5"
