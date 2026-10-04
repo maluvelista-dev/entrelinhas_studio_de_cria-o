@@ -91,3 +91,7 @@ Upload direto na estrutura, com arquivos internos por personagem e contexto de p
 ## Ampliação autorizada — pacotes, poses, animações e instâncias em páginas
 
 Em 03/10/2026 o usuário solicitou explicitamente os três recursos, autorizando esse escopo das Fases 4–6. Foram adicionados pacote portátil completo, modelos de poses/keyframes/presets, prévia GSAP e inserção/persistência de personagens nas páginas. O aviso histórico acima de Fase 4 não iniciada descreve a entrega anterior. Isto não encerra todas as Fases 4–7: timeline multipista e editor completo de cenas permanecem pendentes. Entrega e checklist em [CHARACTER_PACKS_AND_MOTION.md](CHARACTER_PACKS_AND_MOTION.md). Aguardar aceite deste incremento antes de ampliar seu escopo.
+
+## Ampliação solicitada — movimentos, interações e atividades
+
+Em 04/10/2026 o usuário apresentou 128 entradas em 12 categorias. Inventário, dependências, opções de perfil visual e critérios de aceite em [MOVEMENTS_AND_INTERACTIONS_PLAN.md](MOVEMENTS_AND_INTERACTIONS_PLAN.md). O documento é uma proposta: não marca novas ações como implementadas. A fundação prevê targets, geometria atualizada durante a animação, objetos inseríveis e vínculo por anchors antes das interações compostas. Manter gates e aceite incremental; não antecipar publicação, mobile ou física.
