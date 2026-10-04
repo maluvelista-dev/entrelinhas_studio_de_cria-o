@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { pageDocumentSchema } from '@studio/schemas';
+import { pageDocumentSchema } from '@studio/schemas/page';
 import { AppError } from '../../errors.js';
 
 export async function findBook(connection, id, lock = false) {

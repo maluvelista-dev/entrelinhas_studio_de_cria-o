@@ -1,5 +1,7 @@
+import { createPageSchema } from '@studio/schemas/page';
+import { resolvePageScene } from './scene.js';
 import { randomUUID } from 'node:crypto';
-import { createBookSchema, updateBookSchema, createPageSchema, reorderSchema, transitionSchema } from '@studio/schemas';
+import { createBookSchema, updateBookSchema, reorderSchema, transitionSchema } from '@studio/schemas';
 import { transaction } from '../../infrastructure/database/pool.js';
 import { assertEditable, assertRevision, assertTransition, assertPageOrder } from './rules.js';
 import { findBook, detail, insertBook, bumpRevision, writePage } from './repository.js';
@@ -45,7 +47,18 @@ export function createBookService(pool, storage) {
     },
     savePage(id, raw, pageId) {
       const input = createPageSchema.parse(raw);
-      return mutate(id, input.revision, (connection, book) => writePage(connection, book, input.document, pageId));
+      return mutate(id, input.revision, async (connection, book) => {
+        if (input.document.schemaVersion === 2) await resolvePageScene(connection, storage, input.document.scene, id, true);
+        return writePage(connection, book, input.document, pageId);
+      });
+    },
+    preview(id, raw) {
+      const input = createPageSchema.parse(raw);
+      return transaction(pool, async connection => {
+        const book = await findBook(connection, id); assertRevision(book.revision, input.revision);
+        if (input.document.schemaVersion !== 2) return { width: 1024, height: 768, characters: [] };
+        return resolvePageScene(connection, storage, input.document.scene, id);
+      });
     },
     reorder(id, raw) {
       const input = reorderSchema.parse(raw);

@@ -18,7 +18,7 @@ function dto(row) {
   const definition = typeof row.definition_json === 'string' ? JSON.parse(row.definition_json) : row.definition_json;
   return { id: row.id, revision: row.revision, definition: Object.keys(definition).length ? definition : null };
 }
-async function save(connection, storage, row, input) {
+export async function saveRig(connection, storage, row, input) {
   const id = row.id;
         const assets = new Map();
         for (const view of input.definition.perspectives) for (const part of view.parts) {
@@ -53,7 +53,7 @@ export function createRigService(pool, storage) {
     async get(id) { return transaction(pool, async connection => ({ ...dto(await find(connection, id)), assets: await images(connection, id) })); },
     async update(id, raw) {
       const input = inputSchema.parse(raw);
-      return transaction(pool, async connection => save(connection, storage, await editable(connection, id, input.revision), input));
+      return transaction(pool, async connection => saveRig(connection, storage, await editable(connection, id, input.revision), input));
     },
     async upload(id, perspectiveId, partId, raw, file) {
       const fields = z.strictObject({ revision: z.string().regex(/^[1-9][0-9]*$/), definition: z.string().max(256 * 1024) }).parse(raw);
@@ -71,7 +71,7 @@ export function createRigService(pool, storage) {
           await connection.execute('INSERT INTO assets (id, owner_book_id, owner_character_id, perspective_id, part_id, storage_key, original_name, media_type, byte_size, checksum, width, height, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(3))',
             [assetId, row.owner_book_id, id, perspectiveId, partId, key, perspectiveId + ' / ' + partId, image.mediaType, metadata.byteSize, metadata.checksum, image.width, image.height]);
           part.assetId = assetId;
-          return save(connection, storage, row, input);
+          return saveRig(connection, storage, row, input);
         });
       } catch (error) {
         try { const [[existing]] = await pool.execute('SELECT id FROM assets WHERE id = ?', [assetId]); if (!existing) await storage.delete(key); }

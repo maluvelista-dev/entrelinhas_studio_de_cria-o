@@ -1,3 +1,6 @@
+import { createPackService, characterPackSchema } from '../modules/library/pack.js';
+import { packUpload } from './pack-upload.js';
+import { createTemplateService } from '../modules/library/templates.js';
 import { createRigService } from '../modules/library/rig.js';
 import { pipeline } from 'node:stream/promises';
 import { createAssetService } from '../modules/assets/service.js';
@@ -11,12 +14,14 @@ import { createLibraryService } from '../modules/library/service.js';
 import { createAuthService, SESSION_LIFETIME_MS } from '../modules/auth/service.js';
 import { requireAccess, permit, sessionToken, createLoginLimiter } from './access.js';
 import { requirePermission } from '../modules/auth/permissions.js';
-import { serializeRig, serializeBook, serializeBookSummary, serializeUser, serializeLibraryItem, serializeAsset } from './serializers.js';
+import { serializeTemplate, serializePagePreview, serializeRig, serializeBook, serializeBookSummary, serializeUser, serializeLibraryItem, serializeAsset } from './serializers.js';
 
 export function createApp({ pool, storage, security = { origins: ['http://127.0.0.1:5173', 'http://localhost:5173'], secureCookies: false } }) {
   const app = express();
   const books = createBookService(pool, storage);
   const library = createLibraryService(pool, storage);
+  const packs = createPackService(pool, storage);
+  const templates = createTemplateService(pool);
   const rigs = createRigService(pool, storage);
   const auth = createAuthService(pool);
   const assets = createAssetService(pool, storage);
@@ -31,7 +36,7 @@ export function createApp({ pool, storage, security = { origins: ['http://127.0.
       if (req.get('sec-fetch-site') === 'cross-site' || !security.origins.includes(req.get('origin'))) {
         return next(new AppError(403, 'ORIGIN_DENIED', 'Origem não autorizada.'));
       }
-      if (!(req.method === 'POST' && (req.path === '/api/internal/assets' || /^\/api\/internal\/library\/[0-9a-f-]{36}\/rig\/[a-zA-Z][a-zA-Z0-9_-]{0,79}\/[a-zA-Z][a-zA-Z0-9_-]{0,79}\/image$/.test(req.path)) && req.is('multipart/form-data')) && !req.is('application/json')) return next(new AppError(415, 'JSON_REQUIRED', 'Use conteúdo JSON.'));
+      if (!(req.method === 'POST' && (req.path === '/api/internal/assets' || req.path === '/api/internal/character-packs' || /^\/api\/internal\/library\/[0-9a-f-]{36}\/rig\/[a-zA-Z][a-zA-Z0-9_-]{0,79}\/[a-zA-Z][a-zA-Z0-9_-]{0,79}\/image$/.test(req.path)) && req.is('multipart/form-data')) && !req.is('application/json')) return next(new AppError(415, 'JSON_REQUIRED', 'Use conteúdo JSON.'));
     }
     next();
   });
@@ -84,6 +89,11 @@ export function createApp({ pool, storage, security = { origins: ['http://127.0.
     else throw new AppError(409, 'INVALID_TRANSITION', 'Publicação ainda não está habilitada.');
     return books.transition(req.params.bookId, input, req.actor.id);
   }, serializeBook);
+  internal.post('/character-packs', permit('library:write'), packUpload((body, file) => packs.import(body, file), serializeLibraryItem));
+  route('get', '/library/:itemId/pack', 'library:read', req => packs.export(req.params.itemId), value => characterPackSchema.parse(value));
+  route('get', '/templates', 'library:read', () => templates.list(), arrayOf(serializeTemplate));
+  route('post', '/templates', 'library:write', req => templates.create(req.body), serializeTemplate, 201);
+  route('post', '/books/:bookId/scene-preview', 'books:read', req => books.preview(req.params.bookId, req.body), serializePagePreview);
   route('get', '/library', 'library:read', () => library.list(), arrayOf(serializeLibraryItem));
   route('post', '/library', 'library:write', req => library.create(req.body), serializeLibraryItem, 201);
   route('get', '/library/:itemId', 'library:read', req => library.get(req.params.itemId), serializeLibraryItem);

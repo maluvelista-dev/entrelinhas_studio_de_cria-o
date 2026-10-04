@@ -47,6 +47,7 @@ beforeAll(async () => {
   try {
     await connection.query("SET FOREIGN_KEY_CHECKS = 0");
     for (const table of [
+      "motion_templates", "character_snapshots",
       "auth_sessions",
       "users",
       "book_status_history",
@@ -75,7 +76,7 @@ beforeAll(async () => {
     "INSERT INTO books(id,slug,created_at,updated_at) VALUES (?,'migration-marker',UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))",
     [id],
   );
-  expect(await migrate(pool)).toEqual(["002_status_history.sql", "003_access_control.sql", "004_image_dimensions.sql", "005_library_details.sql", "006_character_images.sql"]);
+  expect(await migrate(pool)).toEqual(["002_status_history.sql", "003_access_control.sql", "004_image_dimensions.sql", "005_library_details.sql", "006_character_images.sql", "007_motion_and_scenes.sql"]);
   const [[marker]] = await pool.execute("SELECT id FROM books WHERE id = ?", [
     id,
   ]);
@@ -637,4 +638,57 @@ it('uploads part images inside the character, atomically persisting perspective 
   const exclusive = (await request(app).post(endpoint).send({ name: 'Exclusive rig', kind: 'CHARACTER', ownerBookId: book.id })).body;
   await request(app).post(base + '/' + book.id + '/transitions').send({ revision: book.revision, status: 'REVIEW' }).expect(200);
   await request(app).post(url.replace(item.id, exclusive.id)).field('revision', '1').field('definition', JSON.stringify(definition)).attach('file', bytes, 'body.png').expect(409);
+});
+
+
+it('round-trips complete characters, reusable motions and immutable page instances', async () => {
+  const { capturePose, presetAnimation } = await import('../../packages/engine/src/motion.js');
+  const source = (await request(app).post('/api/internal/library').send({ kind: 'CHARACTER', name: 'Portable Luna' }).expect(201)).body;
+  const definition = { schemaVersion: 1, id: 'portable', name: 'Portable Luna', width: 512, height: 512, perspectives: [{ id: 'front', rootId: 'root', parts: [
+    { id: 'root', parentId: null, assetId: null, position: { x: 0, y: 0 } },
+    { id: 'body', parentId: 'root', assetId: null, position: { x: 100, y: 100 }, pivot: { x: 0.5, y: 0.5 } },
+  ], anchors: [{ name: 'hand', partId: 'body', position: { x: 1, y: 0.5 }, coordinateSpace: 'normalized' }] }] };
+  const bytes = await sharp({ create: { width: 64, height: 64, channels: 4, background: '#6655ee80' } }).png().toBuffer();
+  const rig = (await request(app).post('/api/internal/library/' + source.id + '/rig/front/body/image').field('revision', '1').field('definition', JSON.stringify(definition)).attach('file', bytes, 'body.png').expect(201)).body;
+  const poseData = capturePose(rig.definition, 'front'); poseData.transforms.find(p => p.id === 'body').rotation = 0.5;
+  const pose = (await request(app).post('/api/internal/templates').send({ name: 'Standing', kind: 'POSE', definition: poseData }).expect(201)).body;
+  const animation = (await request(app).post('/api/internal/templates').send({ name: 'Wave', kind: 'ANIMATION', definition: presetAnimation(rig.definition, 'front', 'body', 'wave') }).expect(201)).body;
+  expect(Object.keys(pose).sort()).toEqual(['id', 'kind', 'name', 'ownerBookId', 'definition'].sort());
+  const book = await createBook();
+  const document = { schemaVersion: 2, content: { text: 'With a character', narration: null }, scene: { schemaVersion: 2, width: 1024, height: 768, characters: [{ id: 'luna', characterId: source.id, rigRevision: rig.revision, perspective: 'front', x: 20, y: 30, rotation: 0, scaleX: 1, scaleY: 1, poseId: pose.id, animationId: animation.id }] }, timeline: [], automaticAnimations: [], premiumInteractions: [] };
+  const saved = (await request(app).post(base + '/' + book.id + '/pages').send({ revision: book.revision, document }).expect(201)).body;
+  expect(saved.pages[0].scene).toEqual(document.scene);
+  const modifiedRig = structuredClone(rig.definition); modifiedRig.perspectives[0].parts[1].position.x = 999;
+  await request(app).put('/api/internal/library/' + source.id + '/rig').send({ revision: rig.revision, definition: modifiedRig }).expect(200);
+  const preview = (await request(app).post(base + '/' + book.id + '/scene-preview').send({ revision: saved.revision, document }).expect(200)).body;
+  expect(preview.characters[0].definition.perspectives[0].parts[1].position.x).toBe(100);
+  expect(preview.characters[0].animation).toEqual(animation.definition);
+  await request(app).put(base + '/' + book.id + '/pages/' + saved.pages[0].id).send({ revision: saved.revision, document: { ...document, content: { text: 'Updated text', narration: null } } }).expect(200);
+  const reloaded = (await request(createApp({ pool, storage })).get(base + '/' + book.id)).body;
+  expect(reloaded.pages[0].scene).toEqual(document.scene);
+  const second = await createBook();
+  await request(app).post(base + '/' + second.id + '/pages').send({ revision: second.revision, document }).expect(201);
+  const invalid = structuredClone(document); invalid.scene.characters[0].poseId = animation.id;
+  await request(app).post(base + '/' + second.id + '/scene-preview').send({ revision: 2, document: invalid }).expect(422);
+  const pack = (await request(app).get('/api/internal/library/' + source.id + '/pack').expect(200)).body;
+  expect(pack.images).toHaveLength(1); expect(pack.templates).toHaveLength(2);
+  expect(JSON.stringify(pack)).not.toContain('storage_key'); expect(pack.images[0].base64).toBeTruthy();
+  const imported = (await request(app).post('/api/internal/character-packs').field('ownerBookId', '').attach('file', Buffer.from(JSON.stringify(pack)), { filename: 'luna.character.json', contentType: 'application/json' }).expect(201)).body;
+  const copy = (await request(app).get('/api/internal/library/' + imported.id + '/rig').expect(200)).body;
+  expect(copy.definition.perspectives[0].parts[1].parentId).toBe('root');
+  expect(copy.definition.perspectives[0].parts[1].assetId).not.toBe(rig.definition.perspectives[0].parts[1].assetId);
+  expect(copy.assets[0].ownerCharacterId).toBe(imported.id);
+  const tampered = { ...pack, images: [] };
+  await request(app).post('/api/internal/character-packs').attach('file', Buffer.from(JSON.stringify(tampered)), 'bad.character.json').expect(422);
+  const count = (await request(app).get('/api/internal/library')).body.length;
+  await pool.query("CREATE TRIGGER reject_pack_motion BEFORE INSERT ON motion_templates FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'test failure'");
+  try { await request(app).post('/api/internal/character-packs').attach('file', Buffer.from(JSON.stringify(pack)), 'fail.character.json').expect(500); }
+  finally { await pool.query('DROP TRIGGER reject_pack_motion'); }
+  expect((await request(app).get('/api/internal/library')).body).toHaveLength(count);
+  const secure = createApp({ pool, storage });
+  const login = await supertest(secure).post('/api/auth/login').set('Origin', 'http://127.0.0.1:5173').send({ username: 'catalog-reviewer', password: testPassword }).expect(200);
+  const cookie = login.headers['set-cookie'][0].split(';')[0];
+  await supertest(secure).get('/api/internal/templates').set('Cookie', cookie).expect(200);
+  await supertest(secure).post('/api/internal/templates').set('Cookie', cookie).set('Origin', 'http://127.0.0.1:5173').send({ name: 'Forbidden', kind: 'POSE', definition: poseData }).expect(403);
+  await supertest(secure).post('/api/internal/character-packs').set('Cookie', cookie).set('Origin', 'http://127.0.0.1:5173').attach('file', Buffer.from(JSON.stringify(pack)), 'luna.character.json').expect(403);
 });

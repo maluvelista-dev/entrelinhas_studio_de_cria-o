@@ -1,3 +1,5 @@
+import { pageSceneSchema } from '@studio/schemas/page';
+import { templateSchema } from '@studio/schemas/motion';
 import { characterSchema } from '@studio/schemas/character';
 import { permissionsFor } from "../modules/auth/permissions.js";
 
@@ -31,7 +33,7 @@ export function serializePage(page) {
     position: page.position,
     schemaVersion: page.schemaVersion,
     content: { text: page.content.text, narration: null },
-    scene: { schemaVersion: page.scene.schemaVersion, entities: [] },
+    scene: page.scene.schemaVersion === 2 ? pageSceneSchema.parse(page.scene) : { schemaVersion: page.scene.schemaVersion, entities: [] },
     timeline: [],
     automaticAnimations: [],
     premiumInteractions: [],
@@ -95,3 +97,11 @@ export function serializeAsset(asset) {
 export function serializeRig(value) {
   return { id: value.id, revision: value.revision, assets: (value.assets || []).map(asset => ({ ...serializeAsset(asset), ownerCharacterId: asset.ownerCharacterId, perspectiveId: asset.perspectiveId, partId: asset.partId })), definition: value.definition === null ? null : characterSchema.parse(value.definition) };
 }
+
+export function serializeTemplate(value) { return { id: value.id, ...templateSchema.parse({ name: value.name, kind: value.kind, ownerBookId: value.ownerBookId, definition: value.definition }) }; }
+export function serializePagePreview(value) { return { width: value.width, height: value.height, characters: value.characters.map(actor => ({
+  instance: pageSceneSchema.parse({ schemaVersion: 2, width: value.width, height: value.height, characters: [actor.instance] }).characters[0],
+  definition: characterSchema.parse(actor.definition), assets: actor.assets.map(asset => ({ id: asset.id, width: asset.width, height: asset.height })),
+  pose: actor.pose ? templateSchema.parse({ name: 'preview', kind: 'POSE', definition: actor.pose }).definition : null,
+  animation: actor.animation ? templateSchema.parse({ name: 'preview', kind: 'ANIMATION', definition: actor.animation }).definition : null,
+})) }; }
