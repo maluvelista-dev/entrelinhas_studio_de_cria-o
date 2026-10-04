@@ -19,7 +19,7 @@ export function Library({
   busy,
   onCreate,
   canWrite = false,
-  onImport, onRead, onUpdate, onRigUpdate, dirty, onDirty,
+  onImport, onRead, onUpdate, onRigUpdate, onRigUpload, dirty, onDirty,
 }) {
   const [name, setName] = useState("");
   const [kind, setKind] = useState("CHARACTER");
@@ -82,6 +82,7 @@ export function Library({
       {reading && <p role="status">Carregando cadastro…</p>}
       {selected ? rigOpen ? <RigEditor key={selected.id} item={selected} assets={assets} busy={busy || reading} dirty={dirty} onDirty={onDirty}
         editable={canWrite && (!selected.ownerBookId || books.find(book => book.id === selected.ownerBookId)?.status === 'DRAFT')}
+        onUpload={(view, part, input) => onRigUpload(selected.id, view, part, input)}
         onSave={input => onRigUpdate(selected.id, input)} onBack={async () => { if (!leave()) return; onDirty(false); setRigOpen(false); await open(selected.id, false); }} /> : <LibraryDetail key={detailLoad} item={selected} assets={assets} busy={busy || reading}
         onRigOpen={() => { if (leave()) { onDirty(false); setRigOpen(true); } }}
         editable={canWrite && (!selected.ownerBookId || books.find(book => book.id === selected.ownerBookId)?.status === 'DRAFT')}

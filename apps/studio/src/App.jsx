@@ -86,7 +86,7 @@ export function App({ user, onLogout }) {
       setBusy(false);
     }
   }
-  async function mutate(path, method, body, isBook = true) {
+  async function mutate(path, method, body, isBook = true, returnResult = false) {
     setBusy(true);
     setError(null);
     setNotice("");
@@ -105,7 +105,7 @@ export function App({ user, onLogout }) {
           "Salvo. A lista não pôde ser atualizada; tente recarregá-la.",
         );
       }
-      return true;
+      return returnResult ? result : true;
     } catch (err) {
       setError(err);
       return false;
@@ -261,6 +261,7 @@ export function App({ user, onLogout }) {
             <Library
               canWrite={can("library:write")}
               dirty={dirty} onDirty={setDirty}
+              onRigUpload={(id, view, part, input) => mutate('/internal/library/' + id + '/rig/' + encodeURIComponent(view) + '/' + encodeURIComponent(part) + '/image', 'POST', input, false, true)}
               onRigUpdate={(id, input) => mutate('/internal/library/' + id + '/rig', 'PUT', input, false)}
               onRead={id => api('/internal/library/' + id)}
               onUpdate={(id, input) => mutate('/internal/library/' + id, 'PUT', input, false)}
