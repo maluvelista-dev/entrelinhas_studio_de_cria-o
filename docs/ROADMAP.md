@@ -83,3 +83,7 @@ Fichas com consulta e edição de nome, descrição e imagem; áreas Personagens
 ## Ampliação autorizada — edição de estrutura de personagens
 
 Editor persistido de perspectivas, partes, hierarquia, pivôs e anchors em [CHARACTER_EDITOR.md](CHARACTER_EDITOR.md). Mantém Tema A e renderização PixiJS. Não inicia animação/timeline ou montagem de cenas.
+
+## Correção do fluxo de imagens de personagem
+
+Upload direto na estrutura, com arquivos internos por personagem e contexto de perspectiva/parte, sem criar personagens extras. Gravação conjunta com o rig, revisão e compensação. Ver [CHARACTER_EDITOR.md](CHARACTER_EDITOR.md).

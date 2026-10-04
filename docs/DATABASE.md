@@ -94,3 +94,7 @@ Não há upload HTTP ou endpoint para excluir assets. Storage é infraestrutura 
 ## Fichas da Biblioteca
 
 005_library_details.sql adiciona descrição e revisão com valores padrão para cadastros existentes. Testada nos dois MariaDBs e aplicada ao desenvolvimento; [contrato](LIBRARY_DETAILS.md).
+
+## Imagens internas do personagem
+
+006_character_images.sql adiciona owner_character_id (FK para library_items), perspective_id e part_id aos assets. Registros existentes mantêm os três campos nulos. Validação nos dois MariaDBs e aplicação local concluídas.

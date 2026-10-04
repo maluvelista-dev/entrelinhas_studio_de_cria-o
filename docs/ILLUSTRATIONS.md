@@ -10,7 +10,7 @@ Em Novo livro ou Sobre o livro, selecione a imagem no campo Asset de capa e salv
 
 ## Contrato e segurança
 
-POST /api/internal/assets recebe multipart/form-data: file, name, kind e ownerBookId opcional. É a única exceção à exigência de JSON nas mutações; origem, sessão e permissão library:write continuam obrigatórias antes do processamento. Campos adicionais são recusados.
+POST /api/internal/assets recebe multipart/form-data: file, name, kind e ownerBookId opcional. É uma das rotas de upload multipart, junto com o envio direto de partes na estrutura do personagem; origem, sessão e permissão library:write continuam obrigatórias antes do processamento. Campos adicionais são recusados.
 
 Limites: um arquivo por envio, 10 MiB antes e depois do processamento, dimensões máximas 4096 × 4096, dois envios simultâneos por processo. Validação de assinatura, extensão, MIME, decodificação completa e recodificação com sharp. Imagens animadas e corrompidas são recusadas. A recodificação remove metadados, aplica orientação e mantém transparência; o arquivo armazenado não é idêntico ao original.
 
@@ -29,3 +29,5 @@ Sem edição, substituição ou exclusão de imagens, importação de áudio, SV
 Testes unitários: PNG/WebP, transparência, remoção de metadados, formatos falsos, corrupção e limites. Integração nos dois MariaDBs: migração, persistência, leitura autenticada, escopo, capa, restrição editorial, perfil Revisor e compensação após falha de banco. E2E: importar, conferir pixels da prévia, selecionar capa, salvar e recarregar.
 
 Validação em 29/09/2026: lint e build aprovados; 29 testes unitários; 9 testes de integração em MariaDB 10.4.32 e outros 9 no alvo MariaDB 11.4.13; seis cenários E2E aprovados no Edge. Migration 004 aplicada ao desenvolvimento. E2E usa banco de teste limpo, pois os arquivos temporários da integração são removidos ao encerrar a suíte.
+
+Imagens corporais devem ser enviadas diretamente na estrutura do personagem, conforme [CHARACTER_EDITOR.md](CHARACTER_EDITOR.md). O upload geral continua criando um item de catálogo; o upload de parte cria somente o asset interno e seu vínculo no rig.

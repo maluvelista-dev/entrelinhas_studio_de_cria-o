@@ -98,3 +98,7 @@ Consulta e edição usam permissões library:read/write, DTOs explícitos, valid
 ## Estrutura de personagens
 
 GET/PUT de rig exigem permissões da Biblioteca, revisão compartilhada, validação estrita recursiva e assets cadastrados do escopo permitido. URLs externas e campos desconhecidos são recusados. [Detalhes](CHARACTER_EDITOR.md).
+
+## Upload interno de partes
+
+A rota multipart da estrutura valida imagem, dono do personagem e revisão, e grava vínculo + rig atomicamente no banco. Assets internos não são reutilizáveis por outro personagem nem por capas/catálogo geral; conteúdo permanece autenticado e DTOs não expõem paths. Uploads compartilham o limite de concorrência por processo.
