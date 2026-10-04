@@ -89,3 +89,7 @@ Studio controla seleção de perspectiva/debug e desmonta renderer antes do desc
 ## Editor de personagem persistido
 
 A ampliação de 30/09/2026 salva rigs em library_items.definition_json com a revisão compartilhada do cadastro. API valida o modelo puro via createCharacter, sem renderer ou dependência de browser. Studio envia comandos; PixiJS desenha os sprites e uma camada SVG recebe manipulação de pivôs/anchors usando matrizes do Engine. [Contrato e limites](CHARACTER_EDITOR.md).
+
+## Pacotes e cenas persistidas
+
+A API importa/exporta pacotes por lista estrita de campos e referências; Storage mantém imagens privadas imutáveis. motion_templates guarda poses/animações reutilizáveis; character_snapshots preserva rigs de instâncias já salvas. A API valida a cena com a parte pura do Engine. O Studio resolve a prévia autenticada e carrega texturas via AssetManager; AnimationPlayer/GSAP aplica transforms no PixiJS sem loop React. Detalhes em [CHARACTER_PACKS_AND_MOTION.md](CHARACTER_PACKS_AND_MOTION.md).

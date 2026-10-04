@@ -87,3 +87,7 @@ Editor persistido de perspectivas, partes, hierarquia, pivôs e anchors em [CHAR
 ## Correção do fluxo de imagens de personagem
 
 Upload direto na estrutura, com arquivos internos por personagem e contexto de perspectiva/parte, sem criar personagens extras. Gravação conjunta com o rig, revisão e compensação. Ver [CHARACTER_EDITOR.md](CHARACTER_EDITOR.md).
+
+## Ampliação autorizada — pacotes, poses, animações e instâncias em páginas
+
+Em 03/10/2026 o usuário solicitou explicitamente os três recursos, autorizando esse escopo das Fases 4–6. Foram adicionados pacote portátil completo, modelos de poses/keyframes/presets, prévia GSAP e inserção/persistência de personagens nas páginas. O aviso histórico acima de Fase 4 não iniciada descreve a entrega anterior. Isto não encerra todas as Fases 4–7: timeline multipista e editor completo de cenas permanecem pendentes. Entrega e checklist em [CHARACTER_PACKS_AND_MOTION.md](CHARACTER_PACKS_AND_MOTION.md). Aguardar aceite deste incremento antes de ampliar seu escopo.

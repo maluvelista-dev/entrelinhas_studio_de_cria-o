@@ -98,3 +98,7 @@ Não há upload HTTP ou endpoint para excluir assets. Storage é infraestrutura 
 ## Imagens internas do personagem
 
 006_character_images.sql adiciona owner_character_id (FK para library_items), perspective_id e part_id aos assets. Registros existentes mantêm os três campos nulos. Validação nos dois MariaDBs e aplicação local concluídas.
+
+## Migration 007 — modelos e snapshots de personagens
+
+007_motion_and_scenes.sql adiciona motion_templates e character_snapshots e permite schema_version 1 ou 2 em páginas. Validada com as 13 integrações em MariaDB 10.4.32 (serviço “MySQL” do XAMPP) e MariaDB 11.4.13 isolado. Aplicada ao desenvolvimento em 03/10/2026 com npm.cmd run db:migrate. A alteração da constraint inline usa MODIFY COLUMN, compatível com ambos os motores validados. Preserva documentos v1 existentes; a promoção para v2 ocorre no editor ao salvar. MySQL 8 não é alvo equivalente.

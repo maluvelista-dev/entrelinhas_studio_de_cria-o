@@ -102,3 +102,7 @@ GET/PUT de rig exigem permissões da Biblioteca, revisão compartilhada, valida�
 ## Upload interno de partes
 
 A rota multipart da estrutura valida imagem, dono do personagem e revisão, e grava vínculo + rig atomicamente no banco. Assets internos não são reutilizáveis por outro personagem nem por capas/catálogo geral; conteúdo permanece autenticado e DTOs não expõem paths. Uploads compartilham o limite de concorrência por processo.
+
+## Pacotes, modelos e cenas
+
+Pacotes exigem library:write, sessão e origem permitida; só uma importação simultânea por processo, com tamanho limitado e normalização de imagens. Exportação/consulta exige library:read. Modelos aceitam transforms e easing por allowlist, sem código nem URLs. Prévia exige books:read; gravar cena exige books:write, livro em rascunho e revisão esperada. O servidor verifica escopo de personagens, imagens e modelos e aplica serializers recursivos. Snapshots e base64 exportados contêm conteúdo autorizado, nunca caminhos de storage ou sessões.

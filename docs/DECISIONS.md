@@ -74,3 +74,9 @@ Design System entregue durante a Fase 2 passa a reger interfaces existentes e fu
 Fase 3: manifesto estrito com perspectivas opcionais, partes hierárquicas e anchors nomeados. Cada instância qualifica seus IDs e aplica um transform externo, preservando a definição reutilizável. Grupos não exigem textura; sprites recebem texturas resolvidas pela aplicação, nunca URLs vindas de manifesto. Cache com escopo de preview é suficiente nesta fase e evita descarte global de recursos usados por outras instâncias.
 
 A validação visual usa fixture geométrica com PNG mínimo, em duas instâncias (original/espelhada) e duas perspectivas. Não antecipar importador, inspector ou animações do Playground. Todos os novos controles reutilizam o Tema A; publicação e persistência de cena permanecem nas fases respectivas. Referências: [Sprite](https://pixijs.com/8.x/guides/components/scene-objects/sprite) e [Textures](https://pixijs.com/8.x/guides/components/textures).
+
+## ADR-011 — Pacote portátil, modelos imutáveis e snapshots de rig
+
+Ampliação autorizada em 03/10/2026. Embalagem inicial .character.json com imagens base64 evita extração ZIP e dependências adicionais. Trade-off: maior uso de memória e limites explícitos de 25 MiB/pacote e 16 MiB de imagens. Importar cria cópia independente, incluindo novos IDs de assets/modelos. O formato pode receber outra embalagem versionada sem alterar a estrutura lógica.
+
+Poses completas por keyframe simplificam captura e validação inicial; compatibilidade conservadora por partes/parent/pivot evita aplicar um movimento a um esqueleto estruturalmente distinto. GSAP fica no Engine, isolado em export próprio para não carregar renderer no backend. Modelos imutáveis e snapshots por revisão impedem que alterações na Biblioteca mudem páginas já salvas. Retenção e deduplicação ficam explícitas como evoluções. Não há tracks concorrentes nesta entrega.

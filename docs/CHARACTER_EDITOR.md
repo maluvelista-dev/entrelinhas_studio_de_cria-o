@@ -54,3 +54,7 @@ A migration 006 foi validada em MariaDB 10.4.32 (serviço “MySQL” do XAMPP) 
 Validação do upload direto em 30/09/2026: lint/build, 30 testes unitários, 12 integrações em cada MariaDB e oito cenários E2E aprovados. Migration 006 aplicada ao desenvolvimento.
 
 Rechecagem do fluxo de upload e troca de parte em 03/10/2026: cenário E2E específico aprovado após o ajuste para limpar a seleção de arquivo ao trocar de parte.
+
+## Evolução em 03/10/2026
+
+As exclusões anteriores registram a entrega de setembro. Pacote portátil, poses/animações e inserção nas páginas agora estão implementados no escopo solicitado: ver [guia de uso e aceite](CHARACTER_PACKS_AND_MOTION.md). A edição de pivôs/anchors e upload direto continuam nesta mesma tela.

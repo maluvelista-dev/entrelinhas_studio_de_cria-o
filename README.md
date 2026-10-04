@@ -4,7 +4,7 @@ Studio interno para criar livros como dados estruturados e assets. React + JavaS
 
 ## Estado do projeto
 
-Fase 0 aprovada. Fase 1 implementada para aceite: livros, páginas, catálogo, workflow rascunho ↔ revisão e gerenciamento de acessos com serializers. A Fase 2 depende de nova autorização. Ver [entrega e checklist](docs/PHASE_1.md).
+Fases 1–3 implementadas com livros, páginas, Biblioteca, workflow, acessos, Engine e estrutura de personagens. O incremento atual inclui pacotes completos, poses/animações reutilizáveis e personagens nas páginas. Ver [guia e checklist de aceite](docs/CHARACTER_PACKS_AND_MOTION.md) e [roadmap](docs/ROADMAP.md).
 
 MariaDB local validado: 10.4.32. Alvo de produção: série mantida 11.4 LTS, com migrations e integração validadas também em 11.4.13 isolado. Nenhuma VPS foi implantada.
 
@@ -65,7 +65,7 @@ Não executar integração contra dados reais: os testes recriam tabelas apenas 
 
 ## Processo
 
-Ler a documentação antes de cada etapa. Commits pequenos, testes, lint, build, regressão e aceite manual antes de avançar. JavaScript obrigatório. Engine/PixiJS/GSAP serão introduzidos nas fases próprias; mobile, pagamentos, publicação e exportação não fazem parte desta entrega.
+Ler a documentação antes de cada etapa. Commits pequenos, testes, lint, build, regressão e aceite manual antes de avançar. JavaScript obrigatório. Engine/PixiJS/GSAP mantêm renderização e animação separados do React; mobile, pagamentos, publicação e exportação não fazem parte desta entrega.
 
 ## Engine e identidade visual
 

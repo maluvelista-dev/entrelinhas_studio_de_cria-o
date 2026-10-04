@@ -92,3 +92,11 @@ Esses servidores continuam exclusivos, com reuseExistingServer=false e credencia
 ## Fase 3
 
 Resultados em [PHASE_3.md](PHASE_3.md). Testes puros cobrem hierarquia, pivôs, rotação, espelhamento, anchors local/normalized, erro de referência/asset e round-trip. Cache verifica concorrência, retry e descarte durante carregamento. O novo E2E lê pixels reais de sprite e verifica posições conhecidas de anchors, troca de perspectivas e desmontagem. Capturas nas três resoluções desktop; regressão em 390px. Não alterar banco de desenvolvimento para gerar esses dados.
+
+## Pacotes, modelos e páginas — 03/10/2026
+
+33 testes unitários/componentes e 13 integrações aprovados em cada MariaDB (10.4.32 e alvo isolado 11.4.13); lint e build aprovados. Integração cobre pacote com imagens, novos IDs, modelos globais reutilizados entre livros, snapshot imutável, texto preservando cena, referências inválidas, rollback e permissões. O teste do Engine começou vermelho por módulo ausente, passou com captura/aplicação e GSAP; os casos adicionais recusam targets ausentes, tempos inválidos, easing não permitido e escala cruzando zero.
+
+O cenário E2E de pacotes/movimentos verifica captura de poses/keyframes, mudança real no canvas, download/importação, montagem da página, reload, edição de texto sem perda e responsividade. Durante a validação foi corrigido um callback de resize após desmontagem; navegação e carregamento assíncrono dos selects são aguardados explicitamente no teste. Os oito cenários anteriores de regressão passaram. O novo cenário foi repetido após as correções, junto aos cenários afetados de editor/layout. Capturas locais: .local/qa-motion.png e .local/qa-page-scene.png.
+
+No Windows, após os workers terminarem, o teardown do Playwright pode reter os processos dos servidores criados por ele. Nesta execução foi necessário encerrar somente os PIDs desses servidores de teste para obter o resumo final; processos de desenvolvimento foram preservados. Os avisos NO_COLOR/FORCE_COLOR são do runner, sem erro de console da aplicação no cenário aprovado.
