@@ -261,6 +261,7 @@ export function App({ user, onLogout }) {
             <Library
               canWrite={can("library:write")}
               dirty={dirty} onDirty={setDirty}
+              onPackImport={data => mutate('/internal/character-packs', 'POST', data, false)}
               onRigUpload={(id, view, part, input) => mutate('/internal/library/' + id + '/rig/' + encodeURIComponent(view) + '/' + encodeURIComponent(part) + '/image', 'POST', input, false, true)}
               onRigUpdate={(id, input) => mutate('/internal/library/' + id + '/rig', 'PUT', input, false)}
               onRead={id => api('/internal/library/' + id)}

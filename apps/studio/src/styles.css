@@ -105,7 +105,7 @@ fieldset:disabled input, fieldset:disabled textarea, fieldset:disabled select { 
 .tabs button { border: 0; background: transparent; font-size: 14px; color: var(--color-text-secondary); padding: var(--space-4) 0; border-bottom: 2px solid transparent; }
 .tabs button[aria-selected=true] { border-bottom-color: var(--color-primary); color: var(--color-primary-text); font-weight: 600; }
 .editor-body { padding: var(--space-6); max-width: 850px; }
-.pages-layout { display: grid; grid-template-columns: 240px 1fr; min-height: 430px; }
+.pages-layout { display: grid; grid-template-columns: 240px minmax(0,1fr); min-height: 430px; }
 .page-list { border-right: 1px solid var(--color-border); padding: var(--space-5) var(--space-3); background: var(--color-background); }
 .page-list h3 { font-size: 14px; }
 .section-heading { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); }
@@ -171,7 +171,7 @@ footer { display: flex; justify-content: space-between; gap: var(--space-5); mar
   .page-heading { align-items: flex-start; }
   .library-layout { grid-template-columns: 300px minmax(0,1fr); }
   .stats > div { padding: var(--space-4); gap: var(--space-3); }
-  .pages-layout { grid-template-columns: 200px 1fr; }
+  .pages-layout { grid-template-columns: 200px minmax(0,1fr); }
 }
 @media (max-width:767px) {
   .app-shell { display: block; }
@@ -266,3 +266,12 @@ footer { display: flex; justify-content: space-between; gap: var(--space-5); mar
 
 .rig-upload { display: grid; gap: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3); background: var(--color-surface); }
 .rig-upload input[type=file] { width: 100%; min-width: 0; font-size: var(--font-small); }
+
+.motion-workbench { margin-top: var(--space-6); padding: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.scene-playback { margin-block: var(--space-5); }
+.scene-playback .rig-inline button { border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: var(--space-3); background: var(--color-surface); }
+
+.page-scene { border-top: 1px solid var(--color-border); padding-top: var(--space-5); display: grid; gap: var(--space-4); }
+
+.page-content, .page-content > *, .page-scene, .scene-playback { min-width: 0; }
+.page-scene { grid-template-columns: minmax(0,1fr); }

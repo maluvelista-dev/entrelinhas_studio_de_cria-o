@@ -1,17 +1,20 @@
+import { editablePage } from '@studio/schemas/page';
+import { PageScene } from './PageScene.jsx';
 import { Button } from './ui/Button.jsx';
 import { ArrowUp, ArrowDown, Plus } from 'lucide-react';
 import { StatusBadge } from './ui/StatusBadge.jsx';
 import { useState } from "react";
 import { emptyPage, statusLabels } from "@studio/schemas";
 import { BookForm } from "./BookForm.jsx";
-function PageForm({ page, busy, onSave, onDirty }) {
+function PageForm({ page, book, editable, busy, onSave, onDirty }) {
   const [text, setText] = useState(page.content.text);
+  const [scene, setScene] = useState(editablePage(page).scene);
   return (
     <form
       className="form-stack"
       onSubmit={(event) => {
         event.preventDefault();
-        onSave({ ...emptyPage(), content: { text, narration: null } });
+        onSave({ ...editablePage(page), scene, content: { text, narration: null } });
       }}
     >
       <div className="section-heading">
@@ -21,6 +24,7 @@ function PageForm({ page, busy, onSave, onDirty }) {
       <label>
         Texto da página
         <textarea
+          disabled={busy || !editable}
           className="page-text"
           rows={14}
           maxLength={30000}
@@ -32,8 +36,9 @@ function PageForm({ page, busy, onSave, onDirty }) {
           }}
         />
       </label>
+      <PageScene book={book} document={{ ...editablePage(page), scene, content: { text, narration: null } }} editable={editable} busy={busy} onChange={scene => { setScene(scene); onDirty(true); }} />
       <div className="form-actions">
-        <Button className="button" disabled={busy}>
+        <Button className="button" disabled={busy || !editable}>
           {busy ? "Salvando…" : "Salvar página"}
         </Button>
       </div>
@@ -182,15 +187,16 @@ export function BookEditor({
           </aside>
           <div className="page-content">
             {page ? (
-              <fieldset disabled={busy || !canEdit || book.status !== "DRAFT"}>
+              <div>
                 <PageForm
                   key={page.id + ":" + book.revision}
                   page={page}
+                  book={book} editable={canEdit && book.status === "DRAFT"}
                   busy={busy}
                   onDirty={onDirty}
                   onSave={(document) => onPage(document, page.id)}
                 />
-              </fieldset>
+              </div>
             ) : (
               <div className="empty small">
                 <span className="empty-mark">01</span>

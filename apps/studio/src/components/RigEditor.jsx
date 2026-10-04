@@ -1,3 +1,4 @@
+import { MotionWorkbench } from './MotionWorkbench.jsx';
 import { useEffect, useState } from 'react';
 import { characterSchema } from '@studio/schemas/character';
 import { localToWorld } from '@studio/engine';
@@ -123,6 +124,7 @@ export function RigEditor({ item, assets, editable, busy, dirty, onDirty, onSave
         {anchor && <><p className="footnote">{anchor.coordinateSpace === 'normalized' ? 'Coordenadas proporcionais à imagem (0–1). Podem ficar fora dela.' : 'Coordenadas locais em pixels.'}</p><div className="rig-fields"><NumberField label="Anchor X" value={anchor.position.x} onChange={x => changeAnchor({ ...anchor, position: { ...anchor.position, x } })} /><NumberField label="Anchor Y" value={anchor.position.y} onChange={y => changeAnchor({ ...anchor, position: { ...anchor.position, y } })} /></div><Button type="button" className="button secondary" onClick={() => { changeView({ ...view, anchors: view.anchors.filter(anchor => anchor.name !== anchorName) }); setAnchorName(''); }}>Remover anchor</Button></>}
         </fieldset></div>
       </div>
+      <MotionWorkbench item={item} definition={definition} viewId={viewId} partId={partId} assets={eligible} editable={editable} busy={busy} onApply={commit} onDirty={onDirty} />
       <div className="form-actions">{dirty && <span role="status">Estrutura com alterações não salvas</span>}<Button type="button" className="button secondary" disabled={busy} onClick={reload}>Recarregar estrutura</Button>
         {editable && <Button type="button" disabled={busy || Boolean(previewError)} onClick={async () => { if (await onSave({ revision: saved.revision, definition })) { onDirty(false); setLoading(true); try { accept(await api('/internal/library/' + item.id + '/rig')); setNotice('Estrutura salva.'); } catch (failure) { setError(failure.message); } finally { setLoading(false); } } }}>Salvar estrutura</Button>}</div>
     </>}

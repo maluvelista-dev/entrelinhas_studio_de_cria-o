@@ -1,3 +1,4 @@
+import { PackImport } from './CharacterPack.jsx';
 import { RigEditor } from './RigEditor.jsx';
 import { IllustrationImport } from './IllustrationImport.jsx';
 import { LibraryDetail } from './LibraryDetail.jsx';
@@ -19,7 +20,7 @@ export function Library({
   busy,
   onCreate,
   canWrite = false,
-  onImport, onRead, onUpdate, onRigUpdate, onRigUpload, dirty, onDirty,
+  onImport, onPackImport, onRead, onUpdate, onRigUpdate, onRigUpload, dirty, onDirty,
 }) {
   const [name, setName] = useState("");
   const [kind, setKind] = useState("CHARACTER");
@@ -88,6 +89,7 @@ export function Library({
         editable={canWrite && (!selected.ownerBookId || books.find(book => book.id === selected.ownerBookId)?.status === 'DRAFT')}
         onDirty={onDirty} onClose={() => { if (leave()) { setSelected(null); onDirty(false); } }} onReload={() => open(selected.id)}
         onSave={async input => { if (await onUpdate(selected.id, input)) { onDirty(false); await open(selected.id, false); } }} /> : <>
+      {canWrite && kind === 'CHARACTER' && <PackImport books={books} busy={busy} onImport={onPackImport} />}
       {canWrite && kind !== 'AUDIO' && <IllustrationImport key={kind} fixedKind={kind} books={books} busy={busy} onImport={onImport} />}
     <div className="library-layout">
       <section className="panel library-form">
