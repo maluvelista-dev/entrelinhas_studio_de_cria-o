@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { createCharacter } from '@studio/engine';
-import { compatible, applyPose } from '@studio/engine/motion';
+import { composePagePreview } from '@studio/engine/composition';
+import { SceneActionsEditor } from './SceneActionsEditor.jsx';
+import { compatible } from '@studio/engine/motion';
 import { api } from '../api.js';
 import { Button } from './ui/Button.jsx';
 import { ScenePlayback } from './ScenePlayback.jsx';
@@ -14,20 +15,15 @@ export function PageScene({ book, document, editable, busy, onChange }) {
     setWorking(true); setError('');
     try {
       const value = await api('/internal/books/' + book.id + '/scene-preview', { method: 'POST', body: { revision: book.revision, document } });
-      const entities = [], animations = [], definitions = {};
-      for (const actor of value.characters) {
-        const instance = actor.instance; definitions[instance.characterId + ':' + instance.rigRevision] = actor.definition;
-        const assets = new Map(actor.assets.map(asset => [asset.id, { kind: 'sprite', width: asset.width, height: asset.height }]));
-        const character = createCharacter(actor.pose ? applyPose(actor.definition, actor.pose) : actor.definition, { id: instance.id, perspective: instance.perspective, transform: { x: instance.x, y: instance.y, rotation: instance.rotation, scaleX: instance.scaleX, scaleY: instance.scaleY } }, assets);
-        entities.push(...character.entities); if (actor.animation) animations.push({ instanceId: instance.id, definition: actor.animation });
-      }
-      setDefinitions(previous => ({ ...previous, ...definitions })); setPreview({ scene: { schemaVersion: 1, width: value.width, height: value.height, background: '#ffffff', entities }, animations }); setSequence(value => value+1);
+      const definitions={};
+      for (const actor of value.characters) definitions[actor.instance.characterId+':'+actor.instance.rigRevision]=actor.definition;
+      setDefinitions(previous=>({ ...previous,...definitions })); setPreview(composePagePreview(value)); setSequence(value=>value+1);
     } catch (error) { setError(error.message); } finally { setWorking(false); }
   }
   useEffect(() => {
     let active = true;
     Promise.all([api('/internal/library'), api('/internal/templates')]).then(([items, templates]) => { if (active) { setItems(items); setTemplates(templates); } }).catch(error => { if (active) setError(error.message); });
-    if (scene.characters.length) void resolve();
+    if (scene.characters.length || scene.objects?.length) void resolve();
     return () => { active = false; };
     // The page form remounts on page/revision changes. Unsaved edits only preview on command.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -49,7 +45,8 @@ export function PageScene({ book, document, editable, busy, onChange }) {
       <label>Pose na página<select value={selected.poseId || ''} onChange={event => update({ poseId: event.target.value || null })}><option value="">Pose original</option>{available.filter(t => t.kind === 'POSE').map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
       <label>Animação na página<select value={selected.animationId || ''} onChange={event => update({ animationId: event.target.value || null })}><option value="">Sem animação</option>{available.filter(t => t.kind === 'ANIMATION').map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
     </div><div className="rig-inline"><Button type="button" className="button secondary" onClick={() => { const index = scene.characters.findIndex(value => value.id === selected.id); if (index > 0) { const values = [...scene.characters]; [values[index-1], values[index]] = [values[index], values[index-1]]; change({ ...scene, characters: values }); } }}>Enviar para trás</Button>
-    <Button type="button" className="button secondary" onClick={() => { change({ ...scene, characters: scene.characters.filter(value => value.id !== selected.id) }); setSelected(''); }}>Remover instância da página</Button></div></fieldset>}
+    <Button type="button" className="button secondary" onClick={() => { if (JSON.stringify(scene.program || {}).includes(selected.id)) { setError('Remova as ações e o gatilho que usam este personagem antes de removê-lo.'); return; } change({ ...scene, characters: scene.characters.filter(value => value.id !== selected.id) }); setSelected(''); }}>Remover instância da página</Button></div></fieldset>}
+    <SceneActionsEditor scene={scene} items={items} definitions={definitions} book={book} disabled={busy || working || !editable} onChange={change} />
     <Button type="button" className="button secondary" disabled={busy || working} onClick={resolve}>Atualizar prévia da página</Button>
     <p className="footnote">Salve a página para persistir a composição. Cada instância preserva a versão do rig usada na inserção.</p>
     {preview && <ScenePlayback key={sequence} {...preview} />}
