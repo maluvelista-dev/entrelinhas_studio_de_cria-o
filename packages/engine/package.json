@@ -9,7 +9,10 @@
     "./character-example": "./examples/validation-character.js",
     "./image-loader": "./src/image-loader.js",
     "./motion": "./src/motion.js",
-    "./animation-player": "./src/animation-player.js"
+    "./animation-player": "./src/animation-player.js",
+    "./interaction": "./src/interaction.js",
+    "./scene-player": "./src/scene-player.js",
+    "./composition": "./src/composition.js"
   },
   "dependencies": {
     "@studio/schemas": "*",

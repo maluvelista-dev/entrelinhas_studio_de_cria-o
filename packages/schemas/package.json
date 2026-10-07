@@ -8,7 +8,8 @@
     "./character": "./src/character.js",
     "./library": "./src/library.js",
     "./motion": "./src/motion.js",
-    "./page": "./src/page.js"
+    "./page": "./src/page.js",
+    "./actions": "./src/actions.js"
   },
   "dependencies": {
     "zod": "4.6.5"

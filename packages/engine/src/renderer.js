@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, Sprite } from 'pixi.js';
+import { Application, Container, Graphics, Sprite, Matrix } from 'pixi.js';
 import { interpretScene } from './scene.js';
 
 // No ticker: static scenes render on explicit load/resize commands only.
@@ -61,7 +61,21 @@ export async function createSceneRenderer(host, input, { textures = new Map() } 
   }
   try { load(prepared.scene); }
   catch (error) { app.destroy({ removeView: true }, { children: true }); throw error; }
-  return { load, resize, applyTransforms(transforms) {
+  return { load, resize,
+    applyState(frame) {
+      if (destroyed) throw new Error('Renderer encerrado.');
+      for (const t of frame.transforms) { const node=activeNodes.get(t.id); if (!node) throw new Error('Entidade ausente.'); node.position.set(t.x,t.y); node.rotation=t.rotation; node.scale.set(t.scaleX,t.scaleY); node.alpha=t.opacity; }
+      for (const { id,matrix } of frame.matrices) { const node=activeNodes.get(id); node.setFromMatrix(new Matrix(...matrix)); }
+      app.render();
+    },
+    bindTap(id,callback) {
+      const node=activeNodes.get(id); if (!node) throw new Error('Alvo do toque ausente.');
+      let pressed=null; node.eventMode='static'; node.interactiveChildren=true; node.cursor='pointer';
+      node.on('pointerdown',event=> { if (event.button===0) pressed={ id:event.pointerId,x:event.global.x,y:event.global.y,time:performance.now() }; });
+      node.on('pointerup',event=> { if (pressed && pressed.id===event.pointerId && performance.now()-pressed.time<=500 && Math.hypot(event.global.x-pressed.x,event.global.y-pressed.y)<=10) callback(); pressed=null; });
+      node.on('pointerupoutside',()=> { pressed=null; }); node.on('pointercancel',()=> { pressed=null; });
+    },
+    applyTransforms(transforms) {
     if (destroyed) throw new Error('Renderer encerrado.');
     for (const transform of transforms) {
       const node = activeNodes.get(transform.id); if (!node) throw new Error('Parte de animação ausente.');
