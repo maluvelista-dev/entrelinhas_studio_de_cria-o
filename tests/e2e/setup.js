@@ -13,7 +13,7 @@ export default async function setup() {
     const connection = await pool.getConnection();
     try {
       await connection.query('SET FOREIGN_KEY_CHECKS = 0');
-      for (const table of ['motion_templates', 'character_snapshots', 'auth_sessions', 'users', 'book_status_history', 'library_items', 'pages', 'books', 'book_versions', 'assets', 'schema_migrations']) {
+      for (const table of ['scene_item_snapshots', 'motion_templates', 'character_snapshots', 'auth_sessions', 'users', 'book_status_history', 'library_items', 'pages', 'books', 'book_versions', 'assets', 'schema_migrations']) {
         await connection.query('DROP TABLE IF EXISTS ??', [table]);
       }
     } finally { await connection.query('SET FOREIGN_KEY_CHECKS = 1'); connection.release(); }

@@ -1,3 +1,6 @@
+import { resolveSceneObjects } from './scene-objects.js';
+import { composePagePreview } from '@studio/engine/composition';
+import { createInteractionRuntime } from '@studio/engine/interaction';
 import { characterSchema } from '@studio/schemas/character';
 import { pageSceneSchema } from '@studio/schemas/page';
 import { createCharacter, interpretScene } from '@studio/engine';
@@ -43,5 +46,11 @@ export async function resolvePageScene(connection, storage, raw, bookId, capture
   }
   try { interpretScene({ schemaVersion: 1, width: scene.width, height: scene.height, background: '#ffffff', entities: allEntities }); }
   catch { throw new AppError(422, 'INVALID_SCENE', 'Cena excede o limite de 500 entidades ou contém transformações inválidas.'); }
-  return { width: scene.width, height: scene.height, characters: result };
+  const value={ width:scene.width,height:scene.height,characters:result };
+  if (scene.schemaVersion===3) {
+    value.objects=await resolveSceneObjects(connection,storage,scene.objects,bookId,capture); value.program=scene.program;
+    try { createInteractionRuntime(composePagePreview(value)); }
+    catch (error) { throw new AppError(422,'INVALID_INTERACTION',error.message); }
+  }
+  return value;
 }

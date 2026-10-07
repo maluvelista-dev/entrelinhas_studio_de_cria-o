@@ -1,3 +1,4 @@
+import { programSchema, sceneObjectSchema } from '@studio/schemas/actions';
 import { pageSceneSchema } from '@studio/schemas/page';
 import { templateSchema } from '@studio/schemas/motion';
 import { characterSchema } from '@studio/schemas/character';
@@ -33,7 +34,7 @@ export function serializePage(page) {
     position: page.position,
     schemaVersion: page.schemaVersion,
     content: { text: page.content.text, narration: null },
-    scene: page.scene.schemaVersion === 2 ? pageSceneSchema.parse(page.scene) : { schemaVersion: page.scene.schemaVersion, entities: [] },
+    scene: page.scene.schemaVersion >= 2 ? pageSceneSchema.parse(page.scene) : { schemaVersion: page.scene.schemaVersion, entities: [] },
     timeline: [],
     automaticAnimations: [],
     premiumInteractions: [],
@@ -99,7 +100,7 @@ export function serializeRig(value) {
 }
 
 export function serializeTemplate(value) { return { id: value.id, ...templateSchema.parse({ name: value.name, kind: value.kind, ownerBookId: value.ownerBookId, definition: value.definition }) }; }
-export function serializePagePreview(value) { return { width: value.width, height: value.height, characters: value.characters.map(actor => ({
+export function serializePagePreview(value) { return { ...(value.program ? { program: programSchema.parse(value.program), objects: value.objects.map(item => ({ instance: sceneObjectSchema.parse(item.instance), kind: item.kind, asset: { id:item.asset.id,width:item.asset.width,height:item.asset.height } })) } : {}), width: value.width, height: value.height, characters: value.characters.map(actor => ({
   instance: pageSceneSchema.parse({ schemaVersion: 2, width: value.width, height: value.height, characters: [actor.instance] }).characters[0],
   definition: characterSchema.parse(actor.definition), assets: actor.assets.map(asset => ({ id: asset.id, width: asset.width, height: asset.height })),
   pose: actor.pose ? templateSchema.parse({ name: 'preview', kind: 'POSE', definition: actor.pose }).definition : null,

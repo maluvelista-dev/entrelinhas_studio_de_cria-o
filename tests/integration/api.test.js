@@ -47,7 +47,7 @@ beforeAll(async () => {
   try {
     await connection.query("SET FOREIGN_KEY_CHECKS = 0");
     for (const table of [
-      "motion_templates", "character_snapshots",
+      "scene_item_snapshots", "motion_templates", "character_snapshots",
       "auth_sessions",
       "users",
       "book_status_history",
@@ -76,7 +76,7 @@ beforeAll(async () => {
     "INSERT INTO books(id,slug,created_at,updated_at) VALUES (?,'migration-marker',UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))",
     [id],
   );
-  expect(await migrate(pool)).toEqual(["002_status_history.sql", "003_access_control.sql", "004_image_dimensions.sql", "005_library_details.sql", "006_character_images.sql", "007_motion_and_scenes.sql"]);
+  expect(await migrate(pool)).toEqual(["002_status_history.sql", "003_access_control.sql", "004_image_dimensions.sql", "005_library_details.sql", "006_character_images.sql", "007_motion_and_scenes.sql", "008_scene_interactions.sql"]);
   const [[marker]] = await pool.execute("SELECT id FROM books WHERE id = ?", [
     id,
   ]);
@@ -691,4 +691,32 @@ it('round-trips complete characters, reusable motions and immutable page instanc
   await supertest(secure).get('/api/internal/templates').set('Cookie', cookie).expect(200);
   await supertest(secure).post('/api/internal/templates').set('Cookie', cookie).set('Origin', 'http://127.0.0.1:5173').send({ name: 'Forbidden', kind: 'POSE', definition: poseData }).expect(403);
   await supertest(secure).post('/api/internal/character-packs').set('Cookie', cookie).set('Origin', 'http://127.0.0.1:5173').attach('file', Buffer.from(JSON.stringify(pack)), 'luna.character.json').expect(403);
+});
+
+it('persists movement and tap interactions with object snapshots, rejecting invalid ownership and scope', async () => {
+  const character=(await request(app).post('/api/internal/library').send({kind:'CHARACTER',name:'Action actor'}).expect(201)).body;
+  const rig=(await request(app).put('/api/internal/library/'+character.id+'/rig').send({revision:1,definition:{schemaVersion:1,id:'actor',name:'Actor',width:100,height:100,perspectives:[{id:'front',rootId:'root',parts:[{id:'root',parentId:null,assetId:null,position:{x:0,y:0}}],anchors:[{name:'hand',partId:'root',position:{x:0.5,y:0.5},coordinateSpace:'normalized'}]}]}}).expect(200)).body;
+  const bytes=await sharp({create:{width:32,height:32,channels:4,background:'#ffcc00'}}).png().toBuffer();
+  const image=(await request(app).post('/api/internal/assets').field('name','Action ball').field('kind','OBJECT').attach('file',bytes,'ball.png').expect(201)).body;
+  const object=(await request(app).get('/api/internal/library').expect(200)).body.find(i=>i.assetId===image.id);
+  const book=await createBook();
+  const document={schemaVersion:3,content:{text:'Actions',narration:null},timeline:[],automaticAnimations:[],premiumInteractions:[],scene:{schemaVersion:3,width:500,height:500,characters:[{id:'actor',characterId:character.id,rigRevision:rig.revision,perspective:'front',x:0,y:0,rotation:0,scaleX:1,scaleY:1,poseId:null,animationId:null}],objects:[{id:'ball',libraryId:object.id,revision:object.revision,x:50,y:50,rotation:0,scaleX:1,scaleY:1,anchors:[{name:'center',position:{x:0.5,y:0.5}}]}],program:{schemaVersion:1,trigger:{type:'input.tap',instanceId:'actor'},actions:[{type:'object.grab',actorId:'actor',objectId:'ball',anchor:'hand'},{type:'object.carry',actorId:'actor',objectId:'ball',sourceAnchor:null,target:{kind:'point',point:{x:150,y:50}},duration:2},{type:'object.release',actorId:'actor',objectId:'ball'}]}}};
+  const saved=(await request(app).post(base+'/'+book.id+'/pages').send({revision:book.revision,document}).expect(201)).body;
+  expect(saved.pages[0].scene).toEqual(document.scene);
+  const preview=(await request(app).post(base+'/'+book.id+'/scene-preview').send({revision:saved.revision,document}).expect(200)).body;
+  expect(preview.program).toEqual(document.scene.program); expect(preview.objects[0].asset.id).toBe(object.assetId);
+  expect(JSON.stringify(preview)).not.toContain('storage_key');
+  await request(app).put('/api/internal/library/'+object.id).send({revision:object.revision,name:'Changed object',description:'',assetId:null}).expect(200);
+  expect((await request(app).post(base+'/'+book.id+'/scene-preview').send({revision:saved.revision,document}).expect(200)).body.objects[0].asset.id).toBe(object.assetId);
+  await request(app).put(base+'/'+book.id+'/pages/'+saved.pages[0].id).send({revision:saved.revision,document:{...document,content:{text:'Only text changed',narration:null}}}).expect(200);
+  expect((await request(createApp({pool,storage})).get(base+'/'+book.id)).body.pages[0].scene).toEqual(document.scene);
+  for (const mutate of [value=>{value.scene.program.actions.shift();},value=>{value.scene.program.actions[0].anchor='missing';},value=>{value.scene.program.trigger.instanceId='missing';},value=>{value.scene.program.actions[0].type='eval';},value=>{value.scene.objects[0].id='actor';}]) {
+    const invalid=structuredClone(document);mutate(invalid);await request(app).post(base+'/'+book.id+'/scene-preview').send({revision:3,document:invalid}).expect(422);
+  }
+  const otherBook=await createBook();
+  const exclusive=(await request(app).post('/api/internal/library').send({kind:'OBJECT',name:'Restricted object',assetId:object.assetId,ownerBookId:otherBook.id}).expect(201)).body;
+  const wrongScope=structuredClone(document);wrongScope.scene.objects[0].libraryId=exclusive.id;wrongScope.scene.objects[0].revision=1;
+  await request(app).post(base+'/'+book.id+'/scene-preview').send({revision:3,document:wrongScope}).expect(422);
+  await request(app).post(base+'/'+book.id+'/transitions').send({revision:3,status:'REVIEW'}).expect(200);
+  await request(app).put(base+'/'+book.id+'/pages/'+saved.pages[0].id).send({revision:4,document}).expect(409);
 });

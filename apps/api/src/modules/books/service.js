@@ -48,7 +48,7 @@ export function createBookService(pool, storage) {
     savePage(id, raw, pageId) {
       const input = createPageSchema.parse(raw);
       return mutate(id, input.revision, async (connection, book) => {
-        if (input.document.schemaVersion === 2) await resolvePageScene(connection, storage, input.document.scene, id, true);
+        if (input.document.schemaVersion >= 2) await resolvePageScene(connection, storage, input.document.scene, id, true);
         return writePage(connection, book, input.document, pageId);
       });
     },
@@ -56,7 +56,7 @@ export function createBookService(pool, storage) {
       const input = createPageSchema.parse(raw);
       return transaction(pool, async connection => {
         const book = await findBook(connection, id); assertRevision(book.revision, input.revision);
-        if (input.document.schemaVersion !== 2) return { width: 1024, height: 768, characters: [] };
+        if (input.document.schemaVersion < 2) return { width: 1024, height: 768, characters: [] };
         return resolvePageScene(connection, storage, input.document.scene, id);
       });
     },
