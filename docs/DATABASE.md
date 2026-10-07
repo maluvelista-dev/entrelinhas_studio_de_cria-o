@@ -102,3 +102,7 @@ Não há upload HTTP ou endpoint para excluir assets. Storage é infraestrutura 
 ## Migration 007 — modelos e snapshots de personagens
 
 007_motion_and_scenes.sql adiciona motion_templates e character_snapshots e permite schema_version 1 ou 2 em páginas. Validada com as 13 integrações em MariaDB 10.4.32 (serviço “MySQL” do XAMPP) e MariaDB 11.4.13 isolado. Aplicada ao desenvolvimento em 03/10/2026 com npm.cmd run db:migrate. A alteração da constraint inline usa MODIFY COLUMN, compatível com ambos os motores validados. Preserva documentos v1 existentes; a promoção para v2 ocorre no editor ao salvar. MySQL 8 não é alvo equivalente.
+
+## Migration 008 — objetos e interações na página
+
+008_scene_interactions.sql adiciona scene_item_snapshots (item/revisão → asset) e permite página v3. Validada com 14 integrações em MariaDB 10.4.32 do serviço “MySQL” do XAMPP e em MariaDB 11.4.13 isolado. Aplicada ao desenvolvimento em 04/10/2026. Documentos v1/v2 permanecem aceitos; não houve conversão em lote dos livros existentes.

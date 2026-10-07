@@ -80,3 +80,9 @@ A validação visual usa fixture geométrica com PNG mínimo, em duas instância
 Ampliação autorizada em 03/10/2026. Embalagem inicial .character.json com imagens base64 evita extração ZIP e dependências adicionais. Trade-off: maior uso de memória e limites explícitos de 25 MiB/pacote e 16 MiB de imagens. Importar cria cópia independente, incluindo novos IDs de assets/modelos. O formato pode receber outra embalagem versionada sem alterar a estrutura lógica.
 
 Poses completas por keyframe simplificam captura e validação inicial; compatibilidade conservadora por partes/parent/pivot evita aplicar um movimento a um esqueleto estruturalmente distinto. GSAP fica no Engine, isolado em export próprio para não carregar renderer no backend. Modelos imutáveis e snapshots por revisão impedem que alterações na Biblioteca mudem páginas já salvas. Retenção e deduplicação ficam explícitas como evoluções. Não há tracks concorrentes nesta entrega.
+
+## ADR-012 — Ações sequenciais e geometria atualizada
+
+Primeiro incremento de 04/10/2026: separar ações de movimentos, objetos e eventos por nomes de domínio. Avaliador puro reconstrói transforms/vínculos por tempo; GSAP controla um relógio, evitando que o renderer se torne a única fonte das posições dos anchors. Pegar/soltar preserva matriz world, inclusive com rotação/espelhamento. Vínculo restrito objeto → personagem elimina ciclos nesta primeira versão. Não adicionar physics engine.
+
+Usuário escolheu perfis por personagem com mapeamento de partes, poses/animações e imagens alternativas. Esse editor será implementado na etapa de gestos/expressões. Não inferir anatomia nem substituir expressões ausentes por movimentos genéricos. Catálogo completo e critérios em MOVEMENTS_AND_INTERACTIONS_PLAN.md.

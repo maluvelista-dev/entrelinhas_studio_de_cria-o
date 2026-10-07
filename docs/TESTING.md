@@ -100,3 +100,7 @@ Resultados em [PHASE_3.md](PHASE_3.md). Testes puros cobrem hierarquia, pivôs, 
 O cenário E2E de pacotes/movimentos verifica captura de poses/keyframes, mudança real no canvas, download/importação, montagem da página, reload, edição de texto sem perda e responsividade. Durante a validação foi corrigido um callback de resize após desmontagem; navegação e carregamento assíncrono dos selects são aguardados explicitamente no teste. Os oito cenários anteriores de regressão passaram. O novo cenário foi repetido após as correções, junto aos cenários afetados de editor/layout. Capturas locais: .local/qa-motion.png e .local/qa-page-scene.png.
 
 No Windows, após os workers terminarem, o teardown do Playwright pode reter os processos dos servidores criados por ele. Nesta execução foi necessário encerrar somente os PIDs desses servidores de teste para obter o resumo final; processos de desenvolvimento foram preservados. Os avisos NO_COLOR/FORCE_COLOR são do runner, sem erro de console da aplicação no cenário aprovado.
+
+## Primeiro incremento de movimentos/interações
+
+Evidências, correções de toque e pendência da execução E2E conjunta registradas em [MOVEMENTS_AND_INTERACTIONS.md](MOVEMENTS_AND_INTERACTIONS.md#evidências-e-fechamento). Em 07/10/2026, 37 testes unitários/componentes, lint e build aprovados. Sessão E2E do novo cenário usa o serviço real de autenticação com assertTestDatabase, sem consumir a cota de login HTTP dos demais cenários; o limiter da aplicação não foi alterado.

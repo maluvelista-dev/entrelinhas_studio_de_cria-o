@@ -74,3 +74,7 @@ A fase 2 está disponível para aceite em [docs/PHASE_2.md](docs/PHASE_2.md). Ap
 ## Personagens
 
 Fase 3 disponível para aceite em [docs/PHASE_3.md](docs/PHASE_3.md). Após login, abra Visualização → Personagem para conferir hierarquia, pivôs, anchors e perspectivas. Contrato em [docs/CHARACTER_FORMAT.md](docs/CHARACTER_FORMAT.md). O Tema A continuará nas próximas fases.
+
+## Movimentos e interações — primeiro incremento
+
+Em Livro → Páginas, insira objetos/cenários e configure a sequência Mover até → Pegar → Carregar → Soltar, com início manual ou por toque. Contrato, limitações e checklist em [MOVEMENTS_AND_INTERACTIONS.md](docs/MOVEMENTS_AND_INTERACTIONS.md). O catálogo completo solicitado está no [roteiro incremental](docs/MOVEMENTS_AND_INTERACTIONS_PLAN.md).

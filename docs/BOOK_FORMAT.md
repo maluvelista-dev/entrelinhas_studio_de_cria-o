@@ -40,3 +40,7 @@ IDs ilustrativos; a implementação usa UUIDs. Cover/narration referenciam asset
 O livro continua schemaVersion 1; suas páginas admitem versões 1 e 2. O módulo @studio/schemas/page é a entrada para validar documentos de páginas. Página v2 mantém content, timeline, automaticAnimations e premiumInteractions, com estes três arrays ainda vazios. scene agora tem schemaVersion=2, width, height e characters. Cada instância informa id, characterId, rigRevision, perspective, x, y, rotation, scaleX, scaleY, poseId e animationId. IDs de modelos podem ser null.
 
 Referências são resolvidas e validadas na API. A gravação captura o rig por revisão; os arquivos são imutáveis. Salvar texto preserva a cena. Documentos v1 permanecem legíveis e são promovidos pelo editor ao salvar. Ver [guia e limites](CHARACTER_PACKS_AND_MOTION.md).
+
+## Página v3 — objetos e sequência interativa
+
+Mantém v1/v2 legíveis. scene.schemaVersion=3 adiciona objects (referência de Biblioteca/revisão, transform e anchors) e program (schemaVersion=1, trigger e actions). Arrays reservados de timeline/automaticAnimations/premiumInteractions continuam vazios. A sequência vive no contrato da cena e é validada no servidor; editar texto preserva integralmente a cena. Ver [contrato atual](MOVEMENTS_AND_INTERACTIONS.md).

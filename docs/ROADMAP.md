@@ -95,3 +95,7 @@ Em 03/10/2026 o usuário solicitou explicitamente os três recursos, autorizando
 ## Ampliação solicitada — movimentos, interações e atividades
 
 Em 04/10/2026 o usuário apresentou 128 entradas em 12 categorias. Inventário, dependências, opções de perfil visual e critérios de aceite em [MOVEMENTS_AND_INTERACTIONS_PLAN.md](MOVEMENTS_AND_INTERACTIONS_PLAN.md). O documento é uma proposta: não marca novas ações como implementadas. A fundação prevê targets, geometria atualizada durante a animação, objetos inseríveis e vínculo por anchors antes das interações compostas. Manter gates e aceite incremental; não antecipar publicação, mobile ou física.
+
+### Primeiro incremento executável de movimentos/interações
+
+Targets, anchors atualizados, objetos/cenários nas páginas, sequência moveTo/grab/carry/release e gatilho tap implementados. Ver [entrega e checklist](MOVEMENTS_AND_INTERACTIONS.md). Opção de mapeamento de partes/poses/imagens alternativas escolhida pelo usuário para a etapa de gestos/expressões. Aguardar aceite deste incremento antes de avançar aos outros grupos; as 128 entradas não estão todas implementadas.

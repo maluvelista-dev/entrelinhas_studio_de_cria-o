@@ -1,6 +1,6 @@
 # Movimentos e interações — especificação de implementação
 
-Solicitação de 04/10/2026. Estado deste documento: proposta técnica revisável; a lista abaixo ainda não está implementada. Escopo integral solicitado: 128 entradas em 12 categorias, contando nomes iguais em contextos distintos. lookUp/lookDown, fadeIn/fadeOut e grow/shrink são ações separadas.
+Solicitação de 04/10/2026. Estado deste documento: roteiro incremental. O primeiro bloco executável está descrito em MOVEMENTS_AND_INTERACTIONS.md; o catálogo completo abaixo ainda não está implementado. Escopo integral solicitado: 128 entradas em 12 categorias, contando nomes iguais em contextos distintos. lookUp/lookDown, fadeIn/fadeOut e grow/shrink são ações separadas.
 
 ## Diagnóstico do código existente
 
@@ -30,7 +30,7 @@ Opção A, recomendada: perfil de capacidades por personagem/perspectiva, com ma
 
 Opção B: somente poses/clips manuais, sem imagens alternativas. Menor mudança no contrato, mas sorrir/chorar/abrir boca ficam limitados ao que se obtém transformando as imagens atuais.
 
-Não haverá geração automática de ilustrações ou reconhecimento de anatomia implícito. Uma ação sem os recursos necessários exibirá o requisito que falta; não será substituída silenciosamente por balançar o personagem inteiro. A escolha foi enviada ao usuário; permanece a confirmar.
+Não haverá geração automática de ilustrações ou reconhecimento de anatomia implícito. Uma ação sem os recursos necessários exibirá o requisito que falta; não será substituída silenciosamente por balançar o personagem inteiro. Opção A escolhida explicitamente pelo usuário em 04/10/2026. A implementação do editor de capacidades/variantes integra a entrega 4; a escolha não significa que o recurso já existe.
 
 ### Física e contato
 
@@ -107,4 +107,4 @@ Cada entrega termina com testes, lint, build, checklist visual e relatório, con
 
 ## Limites desta especificação
 
-Este documento não altera schemas persistidos, banco ou interfaces. Não implementa ações novas. Não substitui os gates executáveis por uma lista de nomes. A escolha visual deve ser resolvida antes de implementar perfis/variantes de personagem; o plano de dependências e critérios acima já está pronto para revisão.
+Este documento é o inventário do escopo e dos critérios; não substitui gates executáveis por uma lista de nomes. A decisão visual foi resolvida (opção A). O status do primeiro incremento está em MOVEMENTS_AND_INTERACTIONS.md; as outras entregas aguardam o processo de aceite incremental.
