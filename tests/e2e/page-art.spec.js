@@ -1,0 +1,22 @@
+import { test, expect } from '@playwright/test';
+import sharp from 'sharp';
+test('arte por página preserva texto, imagem e prévia após salvar e reabrir', async ({page}) => {
+  const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await page.goto('/');await page.getByLabel('Usuário',{exact:true}).fill(process.env.E2E_USERNAME);await page.getByLabel('Senha',{exact:true}).fill(process.env.E2E_PASSWORD);await page.getByRole('button',{name:'Entrar',exact:true}).click();
+  const title='Arte '+Date.now();
+  await page.getByRole('button',{name:/Novo livro/}).click();await page.getByLabel('Título do livro').fill(title);await page.getByLabel('Identificador (slug)').fill('arte-'+Date.now());await page.getByRole('button',{name:'Criar livro',exact:true}).click();
+  await page.getByRole('tab',{name:'Páginas',exact:true}).click();await page.getByRole('button',{name:'Adicionar página'}).click();await page.getByLabel('Texto da página').fill('Luma na floresta.');
+  await page.getByRole('tab',{name:'Arte das páginas'}).click();
+  const buffer=await sharp({create:{width:320,height:240,channels:4,background:'#33bb99'}}).png().toBuffer();
+  await page.getByLabel('Imagem da arte da página').setInputFiles({name:'floresta.png',mimeType:'image/png',buffer});await page.getByRole('button',{name:'Importar e inserir arte'}).click();
+  await expect(page.getByLabel('Objeto na página').locator('option')).toHaveCount(1);
+  await page.getByRole('button',{name:'Atualizar prévia da página'}).click();await expect(page.getByText('Prévia pronta.',{exact:true})).toBeVisible();
+  const canvas=page.getByRole('img',{name:'Prévia da cena animada'});
+  await expect.poll(()=>canvas.evaluate(node=>{const gl=node.getContext('webgl2')||node.getContext('webgl'),pixel=new Uint8Array(4);gl.readPixels(Math.floor(node.width/2),Math.floor(node.height/2),1,1,gl.RGBA,gl.UNSIGNED_BYTE,pixel);return pixel[1]>150&&pixel[0]<100;})).toBe(true);
+  await page.getByRole('tab',{name:'Páginas',exact:true}).click();await expect(page.getByLabel('Texto da página')).toHaveValue('Luma na floresta.');await page.getByRole('button',{name:'Salvar página',exact:true}).click();await expect(page.getByText('Alterações não salvas')).toHaveCount(0);
+  await page.reload();await page.getByRole('button',{name:new RegExp(title)}).click();await page.getByRole('tab',{name:'Arte das páginas'}).click();await expect(page.getByText('Prévia pronta.',{exact:true})).toBeVisible();
+  await page.screenshot({path:'.local/qa-page-art.png',fullPage:true});
+  await page.getByRole('button',{name:'Adicionar página'}).click();await page.getByRole('button',{name:/02 Página em branco/}).click();await expect(page.getByLabel('Objeto na página')).toHaveCount(0);
+  await page.getByRole('button',{name:/01 Luma na floresta/}).click();await expect(page.getByLabel('Objeto na página').locator('option')).toHaveCount(1);
+  expect(errors).toEqual([]);
+});

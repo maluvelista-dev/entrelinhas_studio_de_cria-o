@@ -11,7 +11,9 @@ test('categorias separadas, consulta, edição persistida e descarte de alteraç
   const description = 'Uma exploradora curiosa. <script>não executar</script>';
   await page.getByLabel('Nome do elemento').fill(name);
   await page.getByLabel('Descrição do elemento').fill(description);
-  await page.getByRole('button', { name: 'Cadastrar elemento' }).click();
+  await page.getByRole('button', { name: 'Criar personagem e adicionar imagens' }).click();
+  await page.getByRole('button', { name: 'Voltar à ficha' }).click();
+  await page.getByRole('button', { name: 'Voltar ao catálogo' }).click();
   await expect(page.getByRole('button', { name: 'Abrir ' + name, exact: true })).toBeVisible();
   await page.getByRole('tab', { name: /Cenários/ }).click();
   await expect(page.getByRole('button', { name: 'Abrir ' + name, exact: true })).toHaveCount(0);
@@ -23,6 +25,7 @@ test('categorias separadas, consulta, edição persistida e descarte de alteraç
   await page.getByRole('tab', { name: /Personagens/ }).click();
   const buffer = await sharp({ create: { width: 48, height: 64, channels: 4, background: '#7755cc80' } }).png().toBuffer();
   const imageName = 'Retrato ' + stamp;
+  await page.getByRole('button', { name: 'Começar com um PNG' }).click();
   await page.getByLabel('Arquivo da ilustração').setInputFiles({ name: 'luna.png', mimeType: 'image/png', buffer });
   await page.getByLabel('Nome da ilustração').fill(imageName);
   await page.getByRole('button', { name: 'Importar imagem', exact: true }).click();

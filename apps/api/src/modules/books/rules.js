@@ -7,7 +7,8 @@ export function assertRevision(actual, expected) {
   if (actual !== expected) throw new AppError(409, 'REVISION_CONFLICT', 'O livro foi alterado. Recarregue antes de tentar novamente.');
 }
 export function assertTransition(from, to) {
-  if (!((from === 'DRAFT' && to === 'REVIEW') || (from === 'REVIEW' && to === 'DRAFT'))) {
+  const allowed = { DRAFT: ['REVIEW'], REVIEW: ['DRAFT', 'READY_TO_PUBLISH'], READY_TO_PUBLISH: ['DRAFT'] };
+  if (!allowed[from]?.includes(to)) {
     throw new AppError(409, 'INVALID_TRANSITION', 'Transição indisponível. Publicação ainda não está habilitada.');
   }
 }

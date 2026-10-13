@@ -1,3 +1,4 @@
+import { observePreviewSize } from './observe-preview-size.js';
 import { useEffect, useRef, useState } from 'react';
 import { AssetManager } from '@studio/engine';
 import { characterAssets, characterPreview } from '@studio/engine/character-example';
@@ -24,7 +25,7 @@ function CharacterCanvas({ preview }) {
         const width = Math.min(1000, Math.floor(element.clientWidth));
         if (width > 0) renderer.resize(width, Math.round(width * 520 / 800));
       };
-      resize(); observer = new ResizeObserver(resize); observer.observe(element);
+      observer = observePreviewSize(element, resize);
       setState('ready');
     }
     const task = start().catch(() => { if (active) setState('error'); });

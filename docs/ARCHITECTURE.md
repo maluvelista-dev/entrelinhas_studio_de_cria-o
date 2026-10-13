@@ -53,7 +53,7 @@ Linux com reverse proxy e TLS, build estático do Studio, processo Node supervis
 
 ## Storage e publicação
 
-Chaves relativas independentes do sistema operacional, sem caminhos Windows nos documentos. Contrato proposto: `put`, `openRead`, `exists`, `delete`, com metadados retornados. Adaptador limita operações à raiz configurada, recusa traversal e define política para symlinks. Uploads futuros terão limites de tamanho e validação de conteúdo.
+Chaves relativas independentes do sistema operacional, sem caminhos Windows nos documentos. Contrato proposto: `put`, `openRead`, `exists`, `delete`, com metadados retornados. Adaptador limita operações à raiz configurada, recusa traversal e define política para symlinks. Uploads de imagens já possuem limites e validação de conteúdo; áudio, fontes e exportações seguem o planejamento em PHASE_0.md.
 
 Assets são imutáveis por chave: substituição cria nova identidade. Rascunhos ficam em armazenamento privado; não servir toda a pasta por `express.static`. Somente assets referenciados por publicação podem ser distribuídos publicamente. Remoção respeita referências de páginas e snapshots. Banco armazena metadados, nunca binários grandes.
 
@@ -63,7 +63,7 @@ Banco e filesystem não compartilham transação: usar staging e compensação p
 
 Versões efetivas estão nos package.json e package-lock.json. ESLint 10 possui análise JSX nativa; usamos apenas o plugin React Hooks compatível, evitando plugin redundante e downgrade do lint.
 
-Fase 0: nenhuma instalação. Fase 1: React, react-dom, Vite e plugin React; Express, mysql2 e Zod para validação em JavaScript; Vitest, Supertest, ESLint e plugins React. Testing Library/jsdom somente quando houver componentes com comportamento a testar. Selecionar versões estáveis compatíveis com Node 24 e registrar lockfile no setup. Migrations SQL executadas por runner pequeno próprio com lock, checksum e estado de execução. DDL no MariaDB pode causar commit implícito; recuperação documentada em DATABASE.md.
+Histórico do escopo inicial: a Fase 0 era documental e o setup entrou na Fase 1. O fechamento vigente inclui setup executável (PHASE_0.md). Dependências instaladas: React, react-dom, Vite e plugin React; Express, mysql2 e Zod para validação em JavaScript; Vitest, Supertest, ESLint e plugins React. Testing Library/jsdom somente quando houver componentes com comportamento a testar. Selecionar versões estáveis compatíveis com Node 24 e registrar lockfile no setup. Migrations SQL executadas por runner pequeno próprio com lock, checksum e estado de execução. DDL no MariaDB pode causar commit implícito; recuperação documentada em DATABASE.md.
 
 Fase 2: PixiJS; GSAP na primeira animação executável. Playwright adicionado na Fase 1 para o fluxo crítico já existente de criação, edição e revisão, usando Edge e build estático. Não instalar bibliotecas de PDF, vídeo, pagamentos ou mobile agora.
 

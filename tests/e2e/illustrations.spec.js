@@ -6,6 +6,7 @@ test('importar uma ilustração e persistir sua capa após recarregar', async ({
   await page.getByLabel('Senha', { exact: true }).fill(process.env.E2E_PASSWORD);
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
   await page.getByRole('button', { name: /Biblioteca/ }).click();
+  await page.getByRole('tab', {name:/Cenários/}).click();
   const buffer = await sharp({ create: { width: 240, height: 160, channels: 4, background: '#6464ee' } }).png().toBuffer();
   const name = 'Cenário ilustrado ' + Date.now();
   await page.getByLabel('Arquivo da ilustração').setInputFiles({ name: 'cenario.png', mimeType: 'image/png', buffer });

@@ -4,7 +4,7 @@ Studio interno para criar livros como dados estruturados e assets. React + JavaS
 
 ## Estado do projeto
 
-Fases 1–3 implementadas com livros, páginas, Biblioteca, workflow, acessos, Engine e estrutura de personagens. O incremento atual inclui pacotes completos, poses/animações reutilizáveis e personagens nas páginas. Ver [guia e checklist de aceite](docs/CHARACTER_PACKS_AND_MOTION.md) e [roadmap](docs/ROADMAP.md).
+Retomada por etapas: **Fase 0 aceita; Fase 1 em fechamento técnico**. Recursos de fases posteriores já existem, mas não comprovam conclusão integral dessas fases. Consulte o [fechamento da Fase 1](docs/PHASE_1_CLOSURE.md), o [fechamento da Fase 0](docs/PHASE_0.md), a [auditoria](docs/PHASES_0_2_AUDIT.md) e o [roadmap](docs/ROADMAP.md).
 
 MariaDB local validado: 10.4.32. Alvo de produção: série mantida 11.4 LTS, com migrations e integração validadas também em 11.4.13 isolado. Nenhuma VPS foi implantada.
 
@@ -77,4 +77,8 @@ Fase 3 disponível para aceite em [docs/PHASE_3.md](docs/PHASE_3.md). Após logi
 
 ## Movimentos e interações — primeiro incremento
 
-Em Livro → Páginas, insira objetos/cenários e configure a sequência Mover até → Pegar → Carregar → Soltar, com início manual ou por toque. Contrato, limitações e checklist em [MOVEMENTS_AND_INTERACTIONS.md](docs/MOVEMENTS_AND_INTERACTIONS.md). O catálogo completo solicitado está no [roteiro incremental](docs/MOVEMENTS_AND_INTERACTIONS_PLAN.md).
+Em Livro → Arte das páginas, insira objetos/cenários e configure a sequência Mover até → Pegar → Carregar → Soltar, com início manual ou por toque. Contrato, limitações e checklist em [MOVEMENTS_AND_INTERACTIONS.md](docs/MOVEMENTS_AND_INTERACTIONS.md). O catálogo completo solicitado está no [roteiro incremental](docs/MOVEMENTS_AND_INTERACTIONS_PLAN.md).
+
+## Situação e catálogo de movimentos
+
+[Estado completo do projeto](docs/PROJECT_STATUS.md) · [Guia de movimentos, capacidades e atividades](docs/ACTION_CATALOG_GUIDE.md).

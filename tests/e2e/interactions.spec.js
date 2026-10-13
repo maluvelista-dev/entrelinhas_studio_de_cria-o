@@ -20,7 +20,7 @@ test('configura movimento, pega/carrega/solta objeto e executa por toque sem alt
   const image=await (await page.request.post('/api/internal/assets',{headers,multipart:{name:'Bola interativa '+stamp,kind:'OBJECT',file:{name:'ball.png',mimeType:'image/png',buffer:objectImage}}})).json();
   const object=(await (await page.request.get('/api/internal/library')).json()).find(i=>i.assetId===image.id);
   await page.getByRole('button',{name:/Novo livro/}).click();await page.getByLabel('Título do livro').fill('Interações '+stamp);await page.getByLabel('Identificador (slug)').fill('interactions-'+stamp);await page.getByRole('button',{name:'Criar livro',exact:true}).click();
-  await page.getByRole('tab',{name:'Páginas',exact:true}).click();await page.getByRole('button',{name:'Adicionar página'}).click();
+  await page.getByRole('tab',{name:'Páginas',exact:true}).click();await page.getByRole('button',{name:'Adicionar página'}).click();await page.getByRole('tab',{name:'Arte das páginas',exact:true}).click();
   await page.getByLabel('Personagem da Biblioteca').selectOption(actor.id);await page.getByRole('button',{name:'Inserir personagem',exact:true}).click();
   await page.getByLabel('X na página',{exact:true}).fill('100');await page.getByLabel('Y na página',{exact:true}).fill('100');
   await page.getByLabel('Objeto ou cenário da Biblioteca').selectOption(object.id);await page.getByRole('button',{name:'Inserir objeto ou cenário',exact:true}).click();
@@ -32,7 +32,7 @@ test('configura movimento, pega/carrega/solta objeto e executa por toque sem alt
   await page.getByRole('combobox',{name:'Ação',exact:true}).selectOption('object.carry');await page.getByLabel('Tipo de destino').selectOption('point');await page.getByLabel('Destino X').fill('400');await page.getByLabel('Destino Y').fill('200');await page.getByRole('button',{name:'Adicionar ação à sequência'}).click();
   await page.getByRole('combobox',{name:'Ação',exact:true}).selectOption('object.release');await page.getByRole('button',{name:'Adicionar ação à sequência'}).click();
   await page.getByRole('combobox',{name:'Ação',exact:true}).selectOption('movement.moveTo');await page.getByLabel('Destino X').fill('600');await page.getByRole('button',{name:'Adicionar ação à sequência'}).click();
-  await expect(page.locator('.action-sequence li')).toHaveCount(5);
+  await page.getByRole('tab',{name:'Arte das páginas',exact:true}).click();await expect(page.locator('.action-sequence li')).toHaveCount(5);
   await page.getByRole('button',{name:'Atualizar prévia da página',exact:true}).click();await expect(page.getByText('Prévia pronta.',{exact:true})).toBeVisible();
   const canvas=page.getByRole('img',{name:'Prévia da cena animada'});
   async function yellow(x,y) { return canvas.evaluate((node,{x,y})=> {const gl=node.getContext('webgl2')||node.getContext('webgl'),pixel=new Uint8Array(4);gl.readPixels(Math.floor(node.width*x/1024),node.height-1-Math.floor(node.height*y/768),1,1,gl.RGBA,gl.UNSIGNED_BYTE,pixel);return pixel[0]>240&&pixel[1]>180&&pixel[1]<240&&pixel[2]<20;},{x,y}); }
@@ -43,9 +43,9 @@ test('configura movimento, pega/carrega/solta objeto e executa por toque sem alt
   await page.getByRole('button',{name:'Resetar prévia',exact:true}).click();await page.touchscreen.tap(box.x+110/1024*box.width,box.y+110/768*box.height);await expect.poll(()=>yellow(420,220)).toBe(true);
   await page.getByRole('button',{name:'Resetar prévia',exact:true}).click();await page.getByRole('button',{name:'Simular toque no alvo'}).focus();await page.keyboard.press('Enter');await expect.poll(()=>yellow(420,220)).toBe(true);
   await page.getByRole('button',{name:'Salvar página',exact:true}).click();await expect(page.getByText('Alterações não salvas')).toHaveCount(0);
-  await page.reload();await page.getByRole('button',{name:new RegExp('Interações '+stamp)}).click();await page.getByRole('tab',{name:'Páginas',exact:true}).click();
+  await page.reload();await page.getByRole('button',{name:new RegExp('Interações '+stamp)}).click();await page.getByRole('tab',{name:'Arte das páginas',exact:true}).click();
   await expect(page.locator('.action-sequence li')).toHaveCount(5);await expect(page.getByText('Prévia pronta.',{exact:true})).toBeVisible();await expect.poll(()=>yellow(130,130)).toBe(true);
-  await page.getByLabel('Texto da página').fill('O objeto continua na página.');await page.getByRole('button',{name:'Salvar página',exact:true}).click();await expect(page.getByText('Alterações não salvas')).toHaveCount(0);await expect(page.locator('.action-sequence li')).toHaveCount(5);
+  await page.getByRole('tab',{name:'Páginas',exact:true}).click();await page.getByLabel('Texto da página').fill('O objeto continua na página.');await page.getByRole('button',{name:'Salvar página',exact:true}).click();await expect(page.getByText('Alterações não salvas')).toHaveCount(0);await page.getByRole('tab',{name:'Arte das páginas',exact:true}).click();await expect(page.locator('.action-sequence li')).toHaveCount(5);
   await page.screenshot({path:'.local/qa-interactions.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
   expect(errors).toEqual([]);

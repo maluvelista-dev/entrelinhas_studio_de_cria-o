@@ -268,6 +268,35 @@ footer { display: flex; justify-content: space-between; gap: var(--space-5); mar
 .rig-upload input[type=file] { width: 100%; min-width: 0; font-size: var(--font-small); }
 
 .motion-workbench { margin-top: var(--space-6); padding: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+
+[hidden] { display: none !important; }
+.character-steps { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: var(--space-3); margin: var(--space-5) 0; background: var(--color-background); border-radius: var(--radius-lg); }
+.character-steps button { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); border: 1px solid transparent; border-radius: var(--radius-md); background: transparent; color: var(--color-text-secondary); font: inherit; }
+.character-steps button > span { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: var(--color-surface); font-size: var(--font-small); }
+.character-steps button[aria-current=step] { background: var(--color-surface); border-color: var(--color-primary); color: var(--color-primary-text); box-shadow: var(--shadow-card); }
+.character-steps small { font-size: 10px; }
+.character-context { display: flex; align-items: center; gap: var(--space-6); padding: var(--space-4); margin-bottom: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+.character-context > label { min-width: 190px; }
+.character-context p { color: var(--color-text-secondary); max-width: 65ch; margin: 0; }
+.perspective-cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(190px,230px)); gap: var(--space-4); margin: var(--space-5) 0; }
+.perspective-card { display: grid; text-align: left; gap: var(--space-2); padding: var(--space-3); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); color: var(--color-text-primary); font: inherit; }
+.perspective-card[aria-pressed=true] { border-color: var(--color-primary); }
+.perspective-art { height: 145px; display: grid; place-items: center; border-radius: var(--radius-md); background: var(--color-primary-soft); color: var(--color-primary-text); overflow: hidden; }
+.perspective-art img { max-width: 100%; max-height: 140px; object-fit: contain; }
+.perspective-card small { color: var(--color-text-secondary); }
+.perspective-link { color: var(--color-primary-text); font-size: var(--font-small); }
+.character-view-create, .character-entry-options { display: flex; align-items: end; flex-wrap: wrap; gap: var(--space-3); }
+.character-view-create { padding: var(--space-4); border-radius: var(--radius-md); background: var(--color-background); }
+.character-view-create small { flex-basis: 100%; color: var(--color-text-secondary); }
+.character-advanced { margin: var(--space-4) 0; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3); }
+.character-advanced summary { cursor: pointer; font-weight: 600; color: var(--color-text-secondary); }
+.character-advanced[open] > summary { margin-bottom: var(--space-4); }
+.character-save { position: sticky; bottom: 0; z-index: 3; padding: var(--space-4); border-top: 1px solid var(--color-border); background: var(--color-surface); border-radius: var(--radius-md); margin-top: var(--space-6); }
+.character-save > span { margin-right: auto; color: var(--color-text-secondary); font-size: var(--font-small); }
+.character-entry { padding: var(--space-5); margin-bottom: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); }
+.character-entry p { color: var(--color-text-secondary); }
+.library-layout.catalog-only { grid-template-columns: minmax(0,1fr); }
+@media(max-width:767px) { .character-context { display: grid; gap: var(--space-3); } .character-steps button { flex: 1 1 40%; padding: var(--space-2); } .perspective-cards { grid-template-columns: repeat(2,minmax(0,1fr)); } .character-save { position: static; } }
 .scene-playback { margin-block: var(--space-5); }
 .scene-playback .rig-inline button { border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: var(--space-3); background: var(--color-surface); }
 

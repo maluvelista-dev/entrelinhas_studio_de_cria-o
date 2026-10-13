@@ -5,6 +5,7 @@ import { compatible } from '@studio/engine/motion';
 import { api } from '../api.js';
 import { Button } from './ui/Button.jsx';
 import { ScenePlayback } from './ScenePlayback.jsx';
+import { PageArtUpload } from './PageArtUpload.jsx';
 export function PageScene({ book, document, editable, busy, onChange }) {
   const scene = document.scene;
   const [items, setItems] = useState([]), [templates, setTemplates] = useState([]), [chosen, setChosen] = useState(''), [selectedId, setSelected] = useState('');
@@ -31,7 +32,12 @@ export function PageScene({ book, document, editable, busy, onChange }) {
   function change(next) { onChange(next); setPreview(null); }
   function update(patch) { change({ ...scene, characters: scene.characters.map(value => value.id === selected.id ? { ...value, ...patch } : value) }); }
   const available = templates.filter(template => (!template.ownerBookId || template.ownerBookId === book.id) && definition && template.definition.perspective === selected.perspective && compatible(definition, template.definition));
-  return <section className="page-scene"><h3>Personagens na página</h3>{error && <p role="alert" className="inline-error">{error}</p>}
+  return <section className="page-scene"><h3>Arte da página</h3><p className="muted">Importe a ilustração desta página ou monte sua arte com cenários, personagens e objetos. Salve a página para guardar a composição.</p>{error && <p role="alert" className="inline-error">{error}</p>}
+    <PageArtUpload book={book} onWorking={setWorking} disabled={busy || working || !editable || (scene.objects?.length || 0)>=24} onImported={(item,asset,items)=>{setItems(items);const scale=Math.min(scene.width/asset.width,scene.height/asset.height);change({...scene,objects:[...(scene.objects || []),{id:'object_'+crypto.randomUUID(),libraryId:item.id,revision:item.revision,x:(scene.width-asset.width*scale)/2,y:(scene.height-asset.height*scale)/2,rotation:0,scaleX:scale,scaleY:scale,anchors:[{name:'center',position:{x:0.5,y:0.5}}]}]});}}/>
+    <h3>Prévia da página</h3>
+    <Button type="button" variant="secondary" disabled={busy || working} onClick={resolve}>Atualizar prévia da página</Button>
+    {preview && <ScenePlayback key={sequence} {...preview} />}
+    <h3>Personagens na página</h3>
     <fieldset disabled={busy || working || !editable}><div className="rig-inline"><label>Personagem da Biblioteca<select value={chosen} onChange={event => setChosen(event.target.value)}><option value="">Selecione</option>{items.filter(item => item.kind === 'CHARACTER' && (!item.ownerBookId || item.ownerBookId === book.id)).map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
     <Button type="button" disabled={!chosen || scene.characters.length >= 8} onClick={async () => { setWorking(true); setError(''); try { const rig = await api('/internal/library/' + chosen + '/rig'); if (!rig.definition) throw new Error('Salve a estrutura deste personagem antes de inseri-lo.');
       const instance = { id: 'instance_' + crypto.randomUUID(), characterId: chosen, rigRevision: rig.revision, perspective: rig.definition.perspectives[0].id, x: 0, y: 0, rotation: 0, scaleX: 0.5, scaleY: 0.5, poseId: null, animationId: null };
@@ -44,11 +50,9 @@ export function PageScene({ book, document, editable, busy, onChange }) {
       <label>Perspectiva na página<select value={selected.perspective} onChange={event => update({ perspective: event.target.value, poseId: null, animationId: null })}>{(definition?.perspectives || [{ id: selected.perspective }]).map(view => <option key={view.id} value={view.id}>{view.id}</option>)}</select></label>
       <label>Pose na página<select value={selected.poseId || ''} onChange={event => update({ poseId: event.target.value || null })}><option value="">Pose original</option>{available.filter(t => t.kind === 'POSE').map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
       <label>Animação na página<select value={selected.animationId || ''} onChange={event => update({ animationId: event.target.value || null })}><option value="">Sem animação</option>{available.filter(t => t.kind === 'ANIMATION').map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
-    </div><div className="rig-inline"><Button type="button" className="button secondary" onClick={() => { const index = scene.characters.findIndex(value => value.id === selected.id); if (index > 0) { const values = [...scene.characters]; [values[index-1], values[index]] = [values[index], values[index-1]]; change({ ...scene, characters: values }); } }}>Enviar para trás</Button>
+    </div><div className="rig-inline"><Button type="button" variant="secondary" onClick={async()=>{setWorking(true);setError('');try {const rig=await api('/internal/library/'+selected.characterId+'/rig');if(!rig.definition) throw new Error('Personagem sem estrutura salva.');const perspective=rig.definition.perspectives.some(v=>v.id===selected.perspective)?selected.perspective:rig.definition.perspectives[0].id;setDefinitions(values=>({...values,[selected.characterId+':'+rig.revision]:rig.definition}));const valid=id=>{const template=templates.find(t=>t.id===id);return template && template.definition.perspective===perspective && compatible(rig.definition,template.definition)?id:null;};update({rigRevision:rig.revision,perspective,poseId:valid(selected.poseId),animationId:valid(selected.animationId)});}catch(error){setError(error.message);}finally{setWorking(false);}}}>Atualizar versão do personagem</Button><Button type="button" className="button secondary" onClick={() => { const index = scene.characters.findIndex(value => value.id === selected.id); if (index > 0) { const values = [...scene.characters]; [values[index-1], values[index]] = [values[index], values[index-1]]; change({ ...scene, characters: values }); } }}>Enviar para trás</Button>
     <Button type="button" className="button secondary" onClick={() => { if (JSON.stringify(scene.program || {}).includes(selected.id)) { setError('Remova as ações e o gatilho que usam este personagem antes de removê-lo.'); return; } change({ ...scene, characters: scene.characters.filter(value => value.id !== selected.id) }); setSelected(''); }}>Remover instância da página</Button></div></fieldset>}
     <SceneActionsEditor scene={scene} items={items} definitions={definitions} book={book} disabled={busy || working || !editable} onChange={change} />
-    <Button type="button" className="button secondary" disabled={busy || working} onClick={resolve}>Atualizar prévia da página</Button>
     <p className="footnote">Salve a página para persistir a composição. Cada instância preserva a versão do rig usada na inserção.</p>
-    {preview && <ScenePlayback key={sequence} {...preview} />}
   </section>;
 }

@@ -13,6 +13,8 @@ it('Vite não publica arquivos privados do workspace por /@fs/', async () => {
   const server = await createServer({
     root: fileURLToPath(new URL('./', import.meta.url)),
     configFile: fileURLToPath(new URL('./vite.config.js', import.meta.url)),
+    // A test optimizer must never invalidate modules of the user's running Studio.
+    cacheDir: path.join(root, 'node_modules', '.vite-studio-security-test'),
     logLevel: 'silent', server: { port: 0, strictPort: false },
   });
   try {

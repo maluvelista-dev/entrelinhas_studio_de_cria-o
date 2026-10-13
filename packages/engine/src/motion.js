@@ -7,7 +7,8 @@ export function capturePose(input, perspective) {
   return poseSchema.parse({ schemaVersion: 1, perspective, skeleton: skeleton(view), transforms: view.parts.map(p => ({ id: p.id, x: p.position.x, y: p.position.y, rotation: p.rotation, scaleX: p.scaleX, scaleY: p.scaleY, opacity: p.opacity })) });
 }
 export function compatible(input, motion) {
-  const definition = characterSchema.parse(input), view = definition.perspectives.find(v => v.id === motion.perspective);
+  const parsed=characterSchema.safeParse(input);if(!parsed.success) return false;
+  const definition = parsed.data, view = definition.perspectives.find(v => v.id === motion.perspective);
   return Boolean(view && JSON.stringify(skeleton(view)) === JSON.stringify([...motion.skeleton].sort((a,b) => a.id.localeCompare(b.id))));
 }
 export function applyPose(input, raw) {

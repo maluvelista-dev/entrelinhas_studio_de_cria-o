@@ -1,5 +1,7 @@
 # Movimentos e interações — especificação de implementação
 
+Atualização de 08/10/2026: o usuário autorizou explicitamente implementar o catálogo integral. O diagnóstico abaixo registra o ponto de partida; consulte ACTION_CATALOG_GUIDE.md e PROJECT_STATUS.md para a entrega atual.
+
 Solicitação de 04/10/2026. Estado deste documento: roteiro incremental. O primeiro bloco executável está descrito em MOVEMENTS_AND_INTERACTIONS.md; o catálogo completo abaixo ainda não está implementado. Escopo integral solicitado: 128 entradas em 12 categorias, contando nomes iguais em contextos distintos. lookUp/lookDown, fadeIn/fadeOut e grow/shrink são ações separadas.
 
 ## Diagnóstico do código existente

@@ -53,7 +53,7 @@ $dbData = Join-Path (Get-Location).Path '.local/mariadb-data'
 
 Em uma instalação nova, inicializar primeiro o datadir exclusivo com `mariadb-install-db.exe --datadir=.local/mariadb-data --port=3307`, iniciar o servidor e executar `node scripts/setup-local-db.js --production-test`. Esse setup cria apenas `book_studio_test`, usuário dedicado e `.env.production-test`. Administração sem senha é restrita a esta instância descartável em loopback; não é configuração para produção.
 
-Com a instância ativa: `npm run test:production-db`. Para encerrá-la após conferir que a porta corresponde à instância isolada, usar `mariadb-admin.exe --host=127.0.0.1 --port=3307 --user=root shutdown` do mesmo pacote. Não apagar datadirs para reiniciar testes.
+Com a instância ativa: `npm run test:production-db`. Para encerrá-la após conferir que a porta corresponde à instância isolada, usar `mariadb-admin.exe --no-defaults --host=127.0.0.1 --port=3307 --user=root --skip-ssl shutdown` do mesmo pacote. Não apagar datadirs para reiniciar testes.
 
 ## Execução e segurança dos testes
 
@@ -85,7 +85,7 @@ Migrations já concluídas não devem ser editadas. Evolução usa novo arquivo 
 
 `npm run db:fixture` cria explicitamente um PNG mínimo e seu registro de asset para testar vinculação pelo catálogo. Não roda automaticamente e não cadastra conteúdo fictício nos livros. Se o INSERT falha, remove o arquivo recém-criado como compensação.
 
-Não há upload HTTP ou endpoint para excluir assets. Storage é infraestrutura privada; referências podem selecionar apenas assets existentes e compatíveis com escopo/tipo. O adaptador recusa traversal, nomes reservados e symlinks. O filesystem deve ser controlado pelo processo local; não oferecer acesso de escrita a terceiros, pois verificação de caminhos não constitui isolamento contra alterações externas concorrentes.
+Há upload HTTP de ilustrações e imagens de personagens, conforme ILLUSTRATIONS.md e CHARACTER_EDITOR.md; não há endpoint geral para excluir assets. Storage é infraestrutura privada; referências podem selecionar apenas assets existentes e compatíveis com escopo/tipo. O adaptador recusa traversal, nomes reservados e symlinks. O filesystem deve ser controlado pelo processo local; não oferecer acesso de escrita a terceiros, pois verificação de caminhos não constitui isolamento contra alterações externas concorrentes.
 
 ## Dimensões de imagens
 
@@ -106,3 +106,13 @@ Não há upload HTTP ou endpoint para excluir assets. Storage é infraestrutura 
 ## Migration 008 — objetos e interações na página
 
 008_scene_interactions.sql adiciona scene_item_snapshots (item/revisão → asset) e permite página v3. Validada com 14 integrações em MariaDB 10.4.32 do serviço “MySQL” do XAMPP e em MariaDB 11.4.13 isolado. Aplicada ao desenvolvimento em 04/10/2026. Documentos v1/v2 permanecem aceitos; não houve conversão em lote dos livros existentes.
+
+## Validação do catálogo em 08/10/2026
+
+Não foi necessária nova migration: capacidades são extensão opcional do documento do rig e o programa tipado continua no documento da página v3. Todas as migrations 001–008 foram reaplicadas em bancos vazios de teste, com preservação de dados durante atualização, nos dois alvos.
+
+Os datadirs existentes recusaram abrir ibdata1 como gravável nesta sessão. Para não modificar os dados existentes, foram inicializados datadirs descartáveis .local/catalog-db-local (binário MariaDB 10.4.32 do XAMPP, porta 3316) e .local/catalog-db-production (MariaDB 11.4.13, porta 3317). Credenciais e arquivos .env existentes não foram sobrescritos. Testes usam DB_PORT temporário no processo e somente book_studio_test; não houve execução contra produção real.
+
+## Categoria editorial — 11/10/2026
+
+009_editorial_category.sql acrescenta book_versions.editorial_category (VARCHAR 100, padrão vazio), preservando registros existentes. Validada nos dois MariaDB e aplicada ao desenvolvimento com db:migrate; não altera SQL já aplicado. Exclusões de páginas/livros/Biblioteca são transacionais e protegidas por revisão/referências; imagens privadas são removidas apenas depois do commit. Detalhes em PHASE_1_CLOSURE.md.

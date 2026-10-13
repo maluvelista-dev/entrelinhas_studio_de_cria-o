@@ -1,5 +1,20 @@
 # Roadmap incremental
 
+## Regra vigente de execução — reafirmada em 11/10/2026
+
+O [detalhamento integral fornecido pelo usuário](PHASE_REQUIREMENTS.md) é a referência de escopo para as fases 0–13.
+
+- Trabalhar na primeira fase com pendências, seguindo suas etapas e dependências.
+- Não iniciar nem ampliar a fase seguinte enquanto houver etapas obrigatórias, testes ou critérios de conclusão pendentes na fase anterior.
+- Distinguir no acompanhamento: pendente, em implementação, implementado, validado e aceito. Código existente ou teste automatizado isolado não significa fase concluída.
+- Fechar cada fase com evidências dos testes obrigatórios, conferência manual do fluxo e aceite do usuário antes de avançar.
+- Preservar o trabalho já existente de fases posteriores; sua existência não autoriza novas ampliações nem elimina pendências anteriores.
+- Registrar conflitos de escopo e resolvê-los antes da implementação afetada, sem mudar silenciosamente a ordem das fases.
+
+Retomada atual: Fase 0 aceita em 11/10/2026. Usuário definiu concluir a Fase 1 antes da Fase 2, com workflow até Pronto para publicar e exclusão somente na Biblioteca. Publicado permanece na Fase 10. Fechamento vigente em [PHASE_1_CLOSURE.md](PHASE_1_CLOSURE.md); aguardar gates e aceite antes da Fase 2.
+
+**Auditoria em 11/10/2026:** os rótulos “aprovada” abaixo registram o aceite de escopos históricos reduzidos. Não significam que todos os requisitos da lista integral apresentada em 11/10 estejam concluídos. Consulte [auditoria das fases 0–2](PHASES_0_2_AUDIT.md) para lacunas e critérios atuais.
+
 Nenhuma próxima fase começa sem aprovação explícita. Cada fase termina com relatório de mudanças, arquivos, gates, checklist manual, limitações e riscos. Uma fase com critérios pendentes não é declarada concluída.
 
 | Fase | Entrega | Critério principal |
@@ -99,3 +114,15 @@ Em 04/10/2026 o usuário apresentou 128 entradas em 12 categorias. Inventário, 
 ### Primeiro incremento executável de movimentos/interações
 
 Targets, anchors atualizados, objetos/cenários nas páginas, sequência moveTo/grab/carry/release e gatilho tap implementados. Ver [entrega e checklist](MOVEMENTS_AND_INTERACTIONS.md). Opção de mapeamento de partes/poses/imagens alternativas escolhida pelo usuário para a etapa de gestos/expressões. Aguardar aceite deste incremento antes de avançar aos outros grupos; as 128 entradas não estão todas implementadas.
+
+## Ampliação autorizada em 08/10/2026
+
+O catálogo integral de movimentos e interações foi solicitado explicitamente pelo usuário, com capacidades por personagem. Consultar [guia e aceite](ACTION_CATALOG_GUIDE.md) e [estado atual](PROJECT_STATUS.md). A ampliação não conclui automaticamente a montagem visual completa de cenas, timeline multipista, áudio ou publicação. O avanço para essas fases depende do aceite previsto.
+
+## Ajuste de usabilidade autorizado em 09/10/2026
+
+Cadastro de personagem reorganizado em etapas, com imagem inteira como caminho inicial, perspectivas com prévias e articulação opcional. Importar PNG e transferir pacote são ações separadas. O usuário esclareceu que o PNG tem cerca de 3 KB: não foi necessário ampliar limites. Esta correção não avança fases pendentes. As restrições de escopo dos registros anteriores são históricas; consulte PROJECT_STATUS.md para o estado atual.
+
+## Arte por página e keyframes — 09/10/2026
+
+A pedido do usuário, adicionada aba Arte das páginas com upload de ilustração e composição/prévia. Corrigida perda do rascunho de keyframes ao salvar estrutura. Ver [roteiro de aceite](PAGE_ART_AND_KEYFRAMES.md). Não inclui timeline multipista ou leitor publicado.

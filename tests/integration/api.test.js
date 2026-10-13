@@ -76,11 +76,15 @@ beforeAll(async () => {
     "INSERT INTO books(id,slug,created_at,updated_at) VALUES (?,'migration-marker',UTC_TIMESTAMP(3),UTC_TIMESTAMP(3))",
     [id],
   );
-  expect(await migrate(pool)).toEqual(["002_status_history.sql", "003_access_control.sql", "004_image_dimensions.sql", "005_library_details.sql", "006_character_images.sql", "007_motion_and_scenes.sql", "008_scene_interactions.sql"]);
+  const oldVersionId=randomUUID();
+  await pool.execute("INSERT INTO book_versions (id,book_id,version,status,title,description,schema_version,revision,created_at,updated_at) VALUES (?, ?, 1, 'DRAFT', 'Antes da categoria', '', 1, 1, UTC_TIMESTAMP(3), UTC_TIMESTAMP(3))",[oldVersionId,id]);
+  expect(await migrate(pool)).toEqual(["002_status_history.sql", "003_access_control.sql", "004_image_dimensions.sql", "005_library_details.sql", "006_character_images.sql", "007_motion_and_scenes.sql", "008_scene_interactions.sql", "009_editorial_category.sql"]);
   const [[marker]] = await pool.execute("SELECT id FROM books WHERE id = ?", [
     id,
   ]);
   expect(marker.id).toBe(id);
+  const [[oldVersion]]=await pool.execute('SELECT title, editorial_category FROM book_versions WHERE id = ?',[oldVersionId]);
+  expect(oldVersion).toEqual({title:'Antes da categoria',editorial_category:''});
   expect(await migrate(pool)).toEqual([]);
   const admin = await createAuthService(pool).createUser({ username: 'test-admin', displayName: 'Admin de teste', role: 'ADMIN', password: testPassword });
   adminId = admin.id;
@@ -719,4 +723,182 @@ it('persists movement and tap interactions with object snapshots, rejecting inva
   await request(app).post(base+'/'+book.id+'/scene-preview').send({revision:3,document:wrongScope}).expect(422);
   await request(app).post(base+'/'+book.id+'/transitions').send({revision:3,status:'REVIEW'}).expect(200);
   await request(app).put(base+'/'+book.id+'/pages/'+saved.pages[0].id).send({revision:4,document}).expect(409);
+});
+
+it('persists mapped capabilities, alternate images and activity rules through packs and page snapshots', async()=>{
+  const {capturePose,presetAnimation}=await import('../../packages/engine/src/motion.js');
+  const character=(await request(app).post('/api/internal/library').send({kind:'CHARACTER',name:'Capabilities'}).expect(201)).body;
+  const definition={schemaVersion:1,id:'capable',name:'Capabilities',width:100,height:100,perspectives:[{id:'front',rootId:'body',parts:[{id:'body',parentId:null,assetId:null,position:{x:0,y:0}},{id:'happy',parentId:'body',assetId:null,position:{x:0,y:0},opacity:0}],anchors:[{name:'hand',partId:'body',position:{x:1,y:0.5},coordinateSpace:'normalized'}]}]};
+  const bytes=await sharp({create:{width:32,height:32,channels:4,background:'#22aacc'}}).png().toBuffer();
+  let rig=(await request(app).post('/api/internal/library/'+character.id+'/rig/front/body/image').field('revision','1').field('definition',JSON.stringify(definition)).attach('file',bytes,'body.png').expect(201)).body;
+  rig=(await request(app).post('/api/internal/library/'+character.id+'/rig/front/happy/image').field('revision',String(rig.revision)).field('definition',JSON.stringify(rig.definition)).attach('file',bytes,'happy.png').expect(201)).body;
+  rig.definition.perspectives[0].behaviors=[{action:'expression.smile',motion:capturePose(rig.definition,'front'),images:[{partId:'body',sourcePartId:'happy'}]},{action:'movement.walkTo',motion:presetAnimation(rig.definition,'front','body','wave'),images:[]}];
+  rig=(await request(app).put('/api/internal/library/'+character.id+'/rig').send({revision:rig.revision,definition:rig.definition}).expect(200)).body;
+  const book=await createBook(),instance={id:'actor',characterId:character.id,rigRevision:rig.revision,perspective:'front',x:0,y:0,rotation:0,scaleX:1,scaleY:1,poseId:null,animationId:null};
+  const document={schemaVersion:3,content:{text:'Activities',narration:null},timeline:[],automaticAnimations:[],premiumInteractions:[],scene:{schemaVersion:3,width:500,height:500,characters:[instance,{...instance,id:'other',x:200}],objects:[],program:{schemaVersion:1,trigger:{type:'input.collect',instanceId:'actor',expected:['actor','other']},actions:[{type:'expression.smile',actorId:'actor',duration:1},{type:'movement.walkTo',actorId:'actor',duration:2,sourceAnchor:null,target:{kind:'point',point:{x:200,y:100}}}]}}};
+  const saved=(await request(app).post(base+'/'+book.id+'/pages').send({revision:book.revision,document}).expect(201)).body;
+  expect(saved.pages[0].scene.program).toEqual(document.scene.program);
+  const preview=(await request(app).post(base+'/'+book.id+'/scene-preview').send({revision:saved.revision,document}).expect(200)).body;
+  expect(preview.characters[0].definition.perspectives[0].behaviors).toEqual(rig.definition.perspectives[0].behaviors);
+  const {inputTypes}=await import('../../packages/schemas/src/actions.js');
+  for(const type of inputTypes) {
+    const name=type.slice(6),trigger={type,instanceId:'actor'};
+    if(name==='hold') trigger.holdMs=800;
+    if(['drag','drop','swipe'].includes(name)) trigger.distance=30;
+    if(name==='swipe') trigger.direction='right';
+    if(['match','assemble','drop'].includes(name)) trigger.pairs=[{source:'actor',target:'other'}];
+    if(['trace','assemble','drop'].includes(name)) trigger.tolerance=20;
+    if(['choose','find','collect','sort'].includes(name)) trigger.expected=['actor','other'];
+    if(name==='trace') trigger.path=[{x:0,y:0},{x:50,y:50}];
+    const doc=structuredClone(document);doc.scene.program.trigger=trigger;
+    await request(app).post(base+'/'+book.id+'/scene-preview').send({revision:saved.revision,document:doc}).expect(200);
+  }
+  const invalid=structuredClone(document);invalid.scene.program.actions[0].type='expression.angry';
+  await request(app).post(base+'/'+book.id+'/scene-preview').send({revision:saved.revision,document:invalid}).expect(422);
+  invalid.scene.program.actions=[];invalid.scene.program.trigger.expected=['missing'];
+  await request(app).post(base+'/'+book.id+'/scene-preview').send({revision:saved.revision,document:invalid}).expect(422);
+  const pack=(await request(app).get('/api/internal/library/'+character.id+'/pack').expect(200)).body;
+  const imported=(await request(app).post('/api/internal/character-packs').attach('file',Buffer.from(JSON.stringify(pack)),'capabilities.character.json').expect(201)).body;
+  const copy=(await request(app).get('/api/internal/library/'+imported.id+'/rig').expect(200)).body;
+  expect(copy.definition.perspectives[0].behaviors).toEqual(rig.definition.perspectives[0].behaviors);
+  expect(copy.definition.perspectives[0].parts[1].assetId).not.toBe(rig.definition.perspectives[0].parts[1].assetId);
+  const bad=structuredClone(rig.definition);bad.perspectives[0].behaviors[0].images[0].sourcePartId='missing';
+  await request(app).put('/api/internal/library/'+character.id+'/rig').send({revision:rig.revision,definition:bad}).expect(422);
+  const modified=structuredClone(rig.definition);modified.perspectives[0].behaviors=[];
+  await request(app).put('/api/internal/library/'+character.id+'/rig').send({revision:rig.revision,definition:modified}).expect(200);
+  const preserved=(await request(app).post(base+'/'+book.id+'/scene-preview').send({revision:saved.revision,document}).expect(200)).body;
+  expect(preserved.characters[0].definition.perspectives[0].behaviors).toHaveLength(2);
+});
+
+it('categoria, duplicação independente, exclusão ordenada e isolamento entre livros', async () => {
+  let book = await createBook();
+  const other = await createBook();
+  book = (await request(app).put(base+'/'+book.id).send({ revision:book.revision,title:book.title,editorialCategory:'Aventura 🌳' }).expect(200)).body;
+  expect(book.editorialCategory).toBe('Aventura 🌳');
+  for (const text of ['Primeira','Segunda','Terceira']) book=(await request(app).post(base+'/'+book.id+'/pages').send({revision:book.revision,document:emptyPage(text)}).expect(201)).body;
+  const source=book.pages[1];
+  await request(app).post(base+'/'+other.id+'/pages/'+source.id+'/duplicate').send({revision:other.revision}).expect(404);
+  await request(app).delete(base+'/'+other.id+'/pages/'+source.id).send({revision:other.revision}).expect(404);
+  book=(await request(app).post(base+'/'+book.id+'/pages/'+source.id+'/duplicate').send({revision:book.revision}).expect(201)).body;
+  const copy=book.pages.at(-1);
+  expect(copy.id).not.toBe(source.id);expect(copy.content).toEqual(source.content);
+  book=(await request(app).put(base+'/'+book.id+'/pages/'+copy.id).send({revision:book.revision,document:emptyPage('Cópia editada')}).expect(200)).body;
+  expect(book.pages.find(p=>p.id===source.id).content.text).toBe('Segunda');
+  await request(app).delete(base+'/'+book.id+'/pages/'+source.id).send({revision:book.revision-1}).expect(409);
+  book=(await request(app).delete(base+'/'+book.id+'/pages/'+source.id).send({revision:book.revision}).expect(200)).body;
+  expect(book.pages.map(p=>p.position)).toEqual([1,2,3]);
+  expect(book.pages.map(p=>p.content.text)).toEqual(['Primeira','Terceira','Cópia editada']);
+  const reloaded=(await request(app).get(base+'/'+book.id).expect(200)).body;
+  expect(reloaded).toMatchObject({editorialCategory:'Aventura 🌳',pages:book.pages});
+  await request(app).delete(base+'/'+book.id).send({revision:book.revision,unexpected:true}).expect(422);
+  await request(app).delete(base+'/'+book.id).send({revision:book.revision}).expect(200);
+  await request(app).get(base+'/'+book.id).expect(404);
+  expect((await request(app).get(base).expect(200)).body.some(b=>b.id===book.id)).toBe(false);
+  await request(app).get(base+'/'+other.id).expect(200);
+});
+
+it('exclusão da Biblioteca protege cenas, preserva assets compartilhados e remove imagens internas', async () => {
+  const bytes=await sharp({create:{width:16,height:16,channels:4,background:'#4488bb'}}).png().toBuffer();
+  const asset=(await request(app).post('/api/internal/assets').field('kind','OBJECT').field('name','Shared image').attach('file',bytes,'shared.png').expect(201)).body;
+  for (const kind of ['OBJECT','BACKGROUND','CHARACTER']) {
+    let book=await createBook();
+    const item=(await request(app).post('/api/internal/library').send({name:'Excluir '+kind,kind,assetId:asset.id}).expect(201)).body;
+    let revision=item.revision, scene;
+    if(kind==='CHARACTER') {
+      const definition={schemaVersion:1,id:'remove_actor',name:'Remove',width:100,height:100,perspectives:[{id:'front',rootId:'root',parts:[{id:'root',parentId:null,assetId:null,position:{x:0,y:0}}],anchors:[]}]};
+      const rig=(await request(app).post('/api/internal/library/'+item.id+'/rig/front/root/image').field('revision',String(revision)).field('definition',JSON.stringify(definition)).attach('file',bytes,'body.png').expect(201)).body;
+      revision=rig.revision;
+      scene={schemaVersion:2,width:500,height:500,characters:[{id:'actor',characterId:item.id,rigRevision:revision,perspective:'front',x:0,y:0,rotation:0,scaleX:1,scaleY:1,poseId:null,animationId:null}]};
+    } else scene={schemaVersion:3,width:500,height:500,characters:[],objects:[{id:'object',libraryId:item.id,revision,x:0,y:0,rotation:0,scaleX:1,scaleY:1,anchors:[]}],program:{schemaVersion:1,trigger:{type:'manual'},actions:[]}};
+    const document={...emptyPage('Preservar arte'),schemaVersion:scene.schemaVersion,scene};
+    book=(await request(app).post(base+'/'+book.id+'/pages').send({revision:book.revision,document}).expect(201)).body;
+    const denied=await request(app).delete('/api/internal/library/'+item.id).send({revision}).expect(409);
+    expect(denied.body.error.code).toBe('LIBRARY_IN_USE');
+    const first=book.pages[0].id;
+    book=(await request(app).post(base+'/'+book.id+'/pages/'+first+'/duplicate').send({revision:book.revision}).expect(201)).body;
+    expect(book.pages[1].scene).toEqual(book.pages[0].scene);
+    book=(await request(app).delete(base+'/'+book.id+'/pages/'+first).send({revision:book.revision}).expect(200)).body;
+    await request(app).delete('/api/internal/library/'+item.id).send({revision}).expect(409);
+    const [files]=await pool.execute('SELECT storage_key FROM assets WHERE owner_character_id = ?',[item.id]);
+    book=(await request(app).delete(base+'/'+book.id+'/pages/'+book.pages[0].id).send({revision:book.revision}).expect(200)).body;
+    await request(app).delete('/api/internal/library/'+item.id).send({revision:revision+1}).expect(409);
+    await request(app).delete('/api/internal/library/'+item.id).send({revision}).expect(200);
+    await request(app).get('/api/internal/library/'+item.id).expect(404);
+    for(const file of files) expect(await storage.exists(file.storage_key)).toBe(false);
+    await request(app).get('/api/internal/assets/'+asset.id+'/content').expect(200);
+    await request(app).delete(base+'/'+book.id).send({revision:book.revision}).expect(200);
+  }
+});
+
+it('revisor não exclui nem duplica e livros com conteúdo exclusivo ficam protegidos', async () => {
+  const book=await createBook();
+  const item=(await request(app).post('/api/internal/library').send({name:'Exclusivo',kind:'OBJECT',ownerBookId:book.id}).expect(201)).body;
+  const denied=await request(app).delete(base+'/'+book.id).send({revision:book.revision}).expect(409);
+  expect(denied.body.error.code).toBe('BOOK_IN_USE');
+  const auth=createAuthService(pool), username='review-'+randomUUID().slice(0,8);
+  await auth.createUser({username,displayName:'Revisor',role:'REVIEWER',password:testPassword});
+  const {token}=await auth.login({username,password:testPassword});
+  for(const [method,url] of [['delete',base+'/'+book.id],['delete','/api/internal/library/'+item.id],['delete',base+'/'+book.id+'/pages/'+randomUUID()],['post',base+'/'+book.id+'/pages/'+randomUUID()+'/duplicate']]) {
+    await supertest(app)[method](url).set('Origin','http://127.0.0.1:5173').set('Cookie','studio_session='+token).send({revision:1}).expect(403);
+  }
+  await request(app).delete('/api/internal/library/'+item.id).send({revision:item.revision}).expect(200);
+  await request(app).delete(base+'/'+book.id).send({revision:book.revision}).expect(200);
+});
+
+it('revisor aprova com histórico atômico, editor não aprova e publicação continua bloqueada', async () => {
+  let book=await createBook();
+  const auth=createAuthService(pool);
+  const cookies={};
+  for(const role of ['REVIEWER','EDITOR']) {
+    const username=role.toLowerCase()+'-'+randomUUID().slice(0,8);
+    await auth.createUser({username,displayName:role,role,password:testPassword});
+    const {token}=await auth.login({username,password:testPassword});cookies[role]='studio_session='+token;
+  }
+  const transition=(role,status)=>supertest(app).post(base+'/'+book.id+'/transitions').set('Origin','http://127.0.0.1:5173').set('Cookie',cookies[role]).send({revision:book.revision,status,comment:'Conferido'});
+  await transition('REVIEWER','READY_TO_PUBLISH').expect(409);
+  book=(await request(app).post(base+'/'+book.id+'/pages').send({revision:book.revision,document:emptyPage('Texto revisado')}).expect(201)).body;
+  book=(await transition('EDITOR','REVIEW').expect(200)).body;
+  await transition('EDITOR','READY_TO_PUBLISH').expect(403);
+  await pool.query("CREATE TRIGGER fail_approval BEFORE INSERT ON book_status_history FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'test failure'");
+  try {
+    await transition('REVIEWER','READY_TO_PUBLISH').expect(500);
+    const loaded=(await request(app).get(base+'/'+book.id).expect(200)).body;
+    expect(loaded.status).toBe('REVIEW');expect(loaded.revision).toBe(book.revision);
+  } finally {await pool.query('DROP TRIGGER fail_approval');}
+  book=(await transition('REVIEWER','READY_TO_PUBLISH').expect(200)).body;
+  expect(book.history.at(-1)).toMatchObject({fromStatus:'REVIEW',toStatus:'READY_TO_PUBLISH',comment:'Conferido'});
+  expect(book.publishedVersion).toBeNull();
+  await request(app).delete(base+'/'+book.id+'/pages/'+book.pages[0].id).send({revision:book.revision}).expect(409);
+  await request(app).post(base+'/'+book.id+'/pages/'+book.pages[0].id+'/duplicate').send({revision:book.revision}).expect(409);
+  await request(app).delete(base+'/'+book.id).send({revision:book.revision}).expect(409);
+  await transition('REVIEWER','PUBLISHED').expect(409);
+  book=(await transition('REVIEWER','DRAFT').expect(200)).body;
+  expect(book.status).toBe('DRAFT');expect(book.history).toHaveLength(3);
+});
+
+it('exclusão concorrente não deixa referência órfã e falha de reordenação desfaz a exclusão', async () => {
+  let book=await createBook();
+  for(const text of ['Uma','Duas']) book=(await request(app).post(base+'/'+book.id+'/pages').send({revision:book.revision,document:emptyPage(text)}).expect(201)).body;
+  await pool.query("CREATE TRIGGER fail_page_order BEFORE UPDATE ON pages FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'test failure'");
+  try {
+    await request(app).delete(base+'/'+book.id+'/pages/'+book.pages[0].id).send({revision:book.revision}).expect(500);
+    const loaded=(await request(app).get(base+'/'+book.id).expect(200)).body;
+    expect(loaded.pages).toEqual(book.pages);expect(loaded.revision).toBe(book.revision);
+  } finally {await pool.query('DROP TRIGGER fail_page_order');}
+  const item=(await request(app).post('/api/internal/library').send({name:'Concorrente',kind:'CHARACTER'}).expect(201)).body;
+  const definition={schemaVersion:1,id:'race',name:'Race',width:100,height:100,perspectives:[{id:'front',rootId:'root',parts:[{id:'root',parentId:null,assetId:null,position:{x:0,y:0}}],anchors:[]}]};
+  const rig=(await request(app).put('/api/internal/library/'+item.id+'/rig').send({revision:item.revision,definition}).expect(200)).body;
+  const document={...emptyPage('Concorrente'),schemaVersion:2,scene:{schemaVersion:2,width:100,height:100,characters:[{id:'actor',characterId:item.id,rigRevision:rig.revision,perspective:'front',x:0,y:0,rotation:0,scaleX:1,scaleY:1,poseId:null,animationId:null}]}};
+  const [saved,removed]=await Promise.all([
+    request(app).post(base+'/'+book.id+'/pages').send({revision:book.revision,document}),
+    request(app).delete('/api/internal/library/'+item.id).send({revision:rig.revision})
+  ]);
+  expect([200,409]).toContain(removed.status);
+  expect([201,409,422]).toContain(saved.status);
+  if(saved.status===201) {
+    expect(removed.status).toBe(409);
+    await request(app).get('/api/internal/library/'+item.id).expect(200);
+  } else {
+    expect((await request(app).get(base+'/'+book.id).expect(200)).body.pages).toHaveLength(2);
+  }
 });

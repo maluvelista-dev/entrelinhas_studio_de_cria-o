@@ -9,7 +9,9 @@ Adicionado à Fase 1 por solicitação explícita do usuário em 26/09/2026. Nã
 | Consultar livros, páginas e catálogo | Sim | Sim | Sim |
 | Criar/editar livros, páginas e catálogo | Sim | Sim | Não |
 | Enviar DRAFT para REVIEW | Sim | Sim | Não |
-| Devolver REVIEW para DRAFT | Sim | Não | Sim |
+| Devolver REVIEW/READY_TO_PUBLISH para DRAFT | Sim | Não | Sim |
+| Aprovar REVIEW para READY_TO_PUBLISH | Sim | Não | Sim |
+| Excluir livros/páginas e elementos da Biblioteca (respeitando vínculos) | Sim | Sim | Não |
 | Criar contas, alterar perfis, desativar e redefinir senhas | Sim | Não | Não |
 | Publicar | Não nesta fase | Não nesta fase | Não nesta fase |
 

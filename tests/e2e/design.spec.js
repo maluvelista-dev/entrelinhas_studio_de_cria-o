@@ -24,7 +24,7 @@ test('Tema A: telas existentes nas três resoluções desktop', async ({ page })
     page.once('dialog', dialog => dialog.accept());
     await page.getByRole('button', { name: 'Cancelar', exact: true }).click();
     await page.getByRole('button', { name: /Biblioteca/ }).click();
-    await expect(page.getByRole('heading', { name: 'Adicionar ao catálogo' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '1. Ficha do personagem' })).toBeVisible();
     await page.screenshot({ path: '.local/theme-a-library-' + width + '.png', fullPage: true });
     await page.getByRole('button', { name: /Acessos/ }).click();
     await expect(page.getByRole('heading', { name: 'Novo acesso' })).toBeVisible();

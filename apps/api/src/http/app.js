@@ -79,13 +79,17 @@ export function createApp({ pool, storage, security = { origins: ['http://127.0.
   route('post', '/books', 'books:write', req => books.create(req.body), serializeBook, 201);
   route('get', '/books/:bookId', 'books:read', req => books.get(req.params.bookId), serializeBook);
   route('put', '/books/:bookId', 'books:write', req => books.update(req.params.bookId, req.body), serializeBook);
+  route('delete', '/books/:bookId', 'books:write', req => books.remove(req.params.bookId, req.body), () => ({ deleted: true }));
   route('post', '/books/:bookId/pages', 'books:write', req => books.savePage(req.params.bookId, req.body), serializeBook, 201);
   route('put', '/books/:bookId/pages/:pageId', 'books:write', req => books.savePage(req.params.bookId, req.body, req.params.pageId), serializeBook);
+  route('delete', '/books/:bookId/pages/:pageId', 'books:write', req => books.deletePage(req.params.bookId, req.params.pageId, req.body), serializeBook);
+  route('post', '/books/:bookId/pages/:pageId/duplicate', 'books:write', req => books.duplicatePage(req.params.bookId, req.params.pageId, req.body), serializeBook, 201);
   route('put', '/books/:bookId/page-order', 'books:write', req => books.reorder(req.params.bookId, req.body), serializeBook);
   route('post', '/books/:bookId/transitions', 'books:read', req => {
     const input = transitionSchema.parse(req.body);
     if (input.status === 'REVIEW') requirePermission(req.actor, 'books:submit');
     else if (input.status === 'DRAFT') requirePermission(req.actor, 'books:return');
+    else if (input.status === 'READY_TO_PUBLISH') requirePermission(req.actor, 'books:approve');
     else throw new AppError(409, 'INVALID_TRANSITION', 'Publicação ainda não está habilitada.');
     return books.transition(req.params.bookId, input, req.actor.id);
   }, serializeBook);
@@ -98,6 +102,7 @@ export function createApp({ pool, storage, security = { origins: ['http://127.0.
   route('post', '/library', 'library:write', req => library.create(req.body), serializeLibraryItem, 201);
   route('get', '/library/:itemId', 'library:read', req => library.get(req.params.itemId), serializeLibraryItem);
   route('put', '/library/:itemId', 'library:write', req => library.update(req.params.itemId, req.body), serializeLibraryItem);
+  route('delete', '/library/:itemId', 'library:write', req => library.remove(req.params.itemId, req.body), () => ({ deleted: true }));
   route('get', '/library/:itemId/rig', 'library:read', req => rigs.get(req.params.itemId), serializeRig);
   route('put', '/library/:itemId/rig', 'library:write', req => rigs.update(req.params.itemId, req.body), serializeRig);
   internal.post('/library/:itemId/rig/:perspectiveId/:partId/image', permit('library:write'), imageUpload((body, file, req) => rigs.upload(req.params.itemId, req.params.perspectiveId, req.params.partId, body, file), serializeRig, { fieldSize: 256 * 1024 }));

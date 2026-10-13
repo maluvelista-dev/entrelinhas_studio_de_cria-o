@@ -51,3 +51,8 @@ test('single scene clock supports pause, backward seek, reset and disposal witho
   const count=frames.length; const instant=createScenePlayer({scene,actors,objects,program:{...program,actions:[program.actions[0]]}},frame=>frames.push(frame));
   expect(frames).toHaveLength(count);instant.play();expect(frames.at(-1).held.get('ball').actorId).toBe('luna');instant.destroy();
 });
+
+test('scene player reports rendering failure and can be disposed without leaking its clock',()=>{
+  const errors=[];const player=createScenePlayer({scene,actors,objects,program},()=>{throw new Error('render failed');},error=>errors.push(error.message));
+  player.seek(1);expect(errors).toEqual(['render failed']);player.pause();player.destroy();expect(()=>player.play()).toThrow();
+});

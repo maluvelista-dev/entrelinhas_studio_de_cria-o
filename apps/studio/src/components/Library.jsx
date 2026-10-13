@@ -20,8 +20,9 @@ export function Library({
   busy,
   onCreate,
   canWrite = false,
-  onImport, onPackImport, onRead, onUpdate, onRigUpdate, onRigUpload, dirty, onDirty,
+  onImport, onPackImport, onRead, onUpdate, onDelete, onRigUpdate, onRigUpload, dirty, onDirty,
 }) {
+  const [creationMode,setCreationMode]=useState('new');
   const [name, setName] = useState("");
   const [kind, setKind] = useState("CHARACTER");
   const [ownerBookId, setOwner] = useState("");
@@ -60,6 +61,7 @@ export function Library({
       setName("");
       setDescription("");
       setAsset("");
+      if(kind==='CHARACTER' && ok.id) {await open(ok.id,false);setRigOpen(true);}
     }
   }
   const eligibleAssets = assets.filter(
@@ -88,13 +90,15 @@ export function Library({
         onRigOpen={() => { if (leave()) { onDirty(false); setRigOpen(true); } }}
         editable={canWrite && (!selected.ownerBookId || books.find(book => book.id === selected.ownerBookId)?.status === 'DRAFT')}
         onDirty={onDirty} onClose={() => { if (leave()) { setSelected(null); onDirty(false); } }} onReload={() => open(selected.id)}
+        onDelete={async () => { if (await onDelete(selected.id, selected.revision)) { setSelected(null); onDirty(false); } }}
         onSave={async input => { if (await onUpdate(selected.id, input)) { onDirty(false); await open(selected.id, false); } }} /> : <>
-      {canWrite && kind === 'CHARACTER' && <PackImport books={books} busy={busy} onImport={onPackImport} />}
-      {canWrite && kind !== 'AUDIO' && <IllustrationImport key={kind} fixedKind={kind} books={books} busy={busy} onImport={onImport} />}
-    <div className="library-layout">
-      <section className="panel library-form">
-        <h2>Adicionar ao catálogo</h2>
-        <p className="muted">Organize os elementos das suas histórias.</p>
+      {canWrite && kind==='CHARACTER' && <div className="character-entry"><div><h2>Seu próximo personagem</h2><p>Comece pelo cadastro ou por um PNG inteiro. Partes e animações podem vir depois.</p></div><div className="character-entry-options"><Button type="button" variant={creationMode==='new'?'primary':'secondary'} onClick={()=>setCreationMode('new')}>Novo personagem</Button><Button type="button" variant={creationMode==='image'?'primary':'secondary'} onClick={()=>setCreationMode('image')}>Começar com um PNG</Button><Button type="button" variant={creationMode==='pack'?'primary':'secondary'} onClick={()=>setCreationMode('pack')}>Trazer personagem de outro Studio</Button></div></div>}
+      {canWrite && kind === 'CHARACTER' && creationMode==='pack' && <PackImport books={books} busy={busy} onImport={onPackImport} />}
+      {canWrite && kind !== 'AUDIO' && (kind!=='CHARACTER' || creationMode==='image') && <IllustrationImport key={kind} fixedKind={kind} books={books} busy={busy} onImport={onImport} />}
+    <div className={kind==='CHARACTER' && creationMode!=='new'?'library-layout catalog-only':'library-layout'}>
+      {(kind!=='CHARACTER' || creationMode==='new') && <section className="panel library-form">
+        <h2>{kind==='CHARACTER'?'1. Ficha do personagem':'Adicionar ao catálogo'}</h2>
+        <p className="muted">{kind==='CHARACTER'?'Dê um nome e conte quem é este personagem. Na próxima tela, envie as imagens.':'Organize os elementos das suas histórias.'}</p>
         <fieldset disabled={busy || !canWrite}>
           <form className="form-stack" onSubmit={submit}>
             <label>
@@ -107,7 +111,7 @@ export function Library({
                 placeholder="Ex.: Raposa Luna"
               />
             </label>
-            <label>
+            {kind!=='CHARACTER' && <label>
               Tipo
               <select
                 value={kind}
@@ -122,7 +126,7 @@ export function Library({
                 ))}
               </select>
             </label>
-            <label>Descrição do elemento<textarea rows={3} maxLength={5000} value={description} onChange={event => setDescription(event.target.value)} /></label>
+            }<label>Descrição do elemento<textarea rows={3} maxLength={5000} value={description} onChange={event => setDescription(event.target.value)} /></label>
             <label>
               Disponibilidade
               <select
@@ -142,7 +146,7 @@ export function Library({
                   ))}
               </select>
             </label>
-            <label>
+            {kind!=='CHARACTER' && <label>
               Asset cadastrado
               <select
                 value={assetId}
@@ -156,8 +160,8 @@ export function Library({
                 ))}
               </select>
             </label>
-            <Button className="button" disabled={busy}>
-              {busy ? "Cadastrando…" : "Cadastrar elemento"}
+            }<Button className="button" disabled={busy}>
+              {busy ? "Cadastrando…" : kind==='CHARACTER'?"Criar personagem e adicionar imagens":"Cadastrar elemento"}
             </Button>
           </form>
         </fieldset>
@@ -167,9 +171,9 @@ export function Library({
           </p>
         )}
         <p className="footnote">
-          Admin e Editor podem importar ilustrações na Biblioteca. A montagem de cenas virá na fase 6.
+          {kind==='CHARACTER'?'Você pode usar apenas a imagem inteira. Perspectivas e partes ficam juntas dentro do personagem.':'As imagens importadas ficam disponíveis para montar suas páginas.'}
         </p>
-      </section>
+      </section>}
       <section className="panel catalog">
         <div className="section-heading">
           <h2>{categories[kind]}</h2>

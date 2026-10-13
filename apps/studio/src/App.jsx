@@ -97,12 +97,12 @@ export function App({ user, onLogout }) {
         setCreating(false);
         setDirty(false);
       }
-      setNotice("Salvo com sucesso.");
+      setNotice(method === 'DELETE' ? 'Excluído com sucesso.' : 'Salvo com sucesso.');
       try {
         await refresh();
       } catch {
         setNotice(
-          "Salvo. A lista não pôde ser atualizada; tente recarregá-la.",
+          "Operação concluída. A lista não pôde ser atualizada; tente recarregá-la.",
         );
       }
       return returnResult ? result : true;
@@ -266,13 +266,14 @@ export function App({ user, onLogout }) {
               onRigUpdate={(id, input) => mutate('/internal/library/' + id + '/rig', 'PUT', input, false)}
               onRead={id => api('/internal/library/' + id)}
               onUpdate={(id, input) => mutate('/internal/library/' + id, 'PUT', input, false)}
+              onDelete={(id, revision) => mutate('/internal/library/' + id, 'DELETE', { revision }, false)}
               onImport={data => mutate('/internal/assets', 'POST', data, false)}
               items={items}
               books={books}
               assets={assets}
               busy={busy}
               onCreate={(input) =>
-                mutate("/internal/library", "POST", input, false)
+                mutate("/internal/library", "POST", input, false, true)
               }
             />
             </>
@@ -337,6 +338,9 @@ export function App({ user, onLogout }) {
                     <ArrowLeft aria-hidden="true" size={16} /> Todos os livros
                   </button>
                   <BookEditor
+                    onDeleteBook={async () => { if (await mutate('/internal/books/' + book.id, 'DELETE', { revision: book.revision }, false)) { setBook(null); setDirty(false); } }}
+                    onDeletePage={pageId => mutate('/internal/books/' + book.id + '/pages/' + pageId, 'DELETE', { revision: book.revision })}
+                    onDuplicatePage={pageId => mutate('/internal/books/' + book.id + '/pages/' + pageId + '/duplicate', 'POST', { revision: book.revision })}
                     permissions={user.permissions}
                     key={book.id}
                     book={book}

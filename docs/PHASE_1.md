@@ -1,5 +1,7 @@
 # Fase 1 — entrega e aceite
 
+**Fechamento vigente de 11/10/2026:** [PHASE_1_CLOSURE.md](PHASE_1_CLOSURE.md). As entregas, limitações e resultados abaixo são o registro histórico de setembro, não o status atual.
+
 Autorizada pelo usuário em 24/09/2026, após aprovação da Fase 0. Entrega aceita pelo usuário após testes manuais em 26/09/2026; Fase 2 autorizada na sequência. O checklist abaixo preserva o roteiro apresentado, sem inferir execução individual de cada item.
 
 ## Implementado

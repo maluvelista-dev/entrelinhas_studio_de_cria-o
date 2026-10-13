@@ -6,7 +6,7 @@ export function newPart(id, parentId = null) {
 }
 export function newDefinition(item) {
   return { schemaVersion: 1, id: 'character_' + item.id, name: item.name.slice(0, 120), width: 1024, height: 1024,
-    perspectives: [{ id: 'front', rootId: 'root', parts: [newPart('root')], anchors: [] }] };
+    perspectives: [{ id: 'front', rootId: 'root', parts: [{...newPart('root'),assetId:item.assetId || null}], anchors: [] }] };
 }
 export function descendants(view, id) {
   const result = new Set([id]);

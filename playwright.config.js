@@ -11,10 +11,11 @@ export default defineConfig({
   testDir: './tests/e2e', globalSetup: './tests/e2e/setup.js', workers: 1, timeout: 60000,
   use: { baseURL: origin, browserName: 'chromium',
     channel: process.env.PLAYWRIGHT_CHANNEL || 'msedge', viewport: { width: 1440, height: 1000 },
+    launchOptions: process.env.PLAYWRIGHT_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH } : {},
     screenshot: 'only-on-failure', trace: 'retain-on-failure' },
   webServer: [
     { command: 'node --env-file=.env.test apps/api/src/server.js',
       url: 'http://127.0.0.1:' + apiPort + '/api/health', reuseExistingServer: false },
-    { command: 'node node_modules/vite/bin/vite.js preview apps/studio --config apps/studio/vite.config.js --host 127.0.0.1 --port ' + studioPort + ' --strictPort', url: origin, reuseExistingServer: false },
+    { command: 'node node_modules/vite/bin/vite.js ' + (process.env.E2E_STUDIO_MODE === 'dev' ? 'apps/studio --mode e2e' : 'preview apps/studio') + ' --config apps/studio/vite.config.js --host 127.0.0.1 --port ' + studioPort + ' --strictPort', url: origin, reuseExistingServer: false },
   ],
 });

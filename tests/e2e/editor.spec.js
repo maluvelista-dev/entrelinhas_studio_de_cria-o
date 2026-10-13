@@ -48,7 +48,9 @@ test('criar, editar, ordenar, revisar e recarregar um livro', async ({ page }) =
   await expect(page.getByLabel('Texto da página')).toHaveValue('Ela encontrou uma árvore que contava histórias.');
   await page.getByRole('button', { name: /Biblioteca/ }).click();
   await page.getByLabel('Nome do elemento').fill('Luna ' + stamp);
-  await page.getByRole('button', { name: 'Cadastrar elemento' }).click();
+  await page.getByRole('button', { name: 'Criar personagem e adicionar imagens' }).click();
+  await page.getByRole('button', { name: 'Voltar à ficha' }).click();
+  await page.getByRole('button', { name: 'Voltar ao catálogo' }).click();
   await expect(page.getByText('Luna ' + stamp, { exact: true })).toBeVisible();
   await page.screenshot({ path: '.local/qa-library.png', fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
@@ -80,7 +82,7 @@ test('administrador gerencia acessos e revisor permanece em consulta', async ({ 
   await expect(page.getByRole('button', { name: /Novo livro/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /Acessos/ })).toHaveCount(0);
   await page.getByRole('button', { name: /Biblioteca/ }).click();
-  await expect(page.getByRole('button', { name: 'Cadastrar elemento' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Criar personagem e adicionar imagens' })).toBeDisabled();
   await page.getByRole('button', { name: /^Abrir / }).first().click();
   await expect(page.getByLabel('Nome do elemento')).toBeDisabled();
   await expect(page.getByLabel('Descrição do elemento')).toBeDisabled();

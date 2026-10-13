@@ -46,6 +46,7 @@ export function serializeBook(book) {
     slug: book.slug,
     title: book.title,
     description: book.description,
+    editorialCategory: book.editorialCategory ?? '',
     ageRange: book.ageRange
       ? { min: book.ageRange.min, max: book.ageRange.max }
       : null,

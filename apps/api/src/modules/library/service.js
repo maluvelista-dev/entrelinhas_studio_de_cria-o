@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { createLibrarySchema, updateLibrarySchema } from '@studio/schemas/library';
+import { revisionInputSchema } from '@studio/schemas';
 import { AppError } from '../../errors.js';
 import { transaction } from '../../infrastructure/database/pool.js';
 import { findBook } from '../books/repository.js';
-import { assertEditable } from '../books/rules.js';
+import { assertEditable, assertRevision } from '../books/rules.js';
 
 export async function assertAssetReference(connection, storage, assetId, ownerBookId, mediaPrefix) {
   if (!assetId) return;
@@ -29,6 +30,33 @@ export function createLibraryService(pool, storage) {
       return rows;
     },
     get(id) { return findItem(pool, id); },
+    async remove(id, raw) {
+      const input = revisionInputSchema.parse(raw);
+      const files = await transaction(pool, async connection => {
+        const item = await findItem(connection, id, true);
+        assertRevision(item.revision, input.revision);
+        if (!['CHARACTER', 'BACKGROUND', 'OBJECT'].includes(item.kind)) throw new AppError(422, 'INVALID_LIBRARY_KIND', 'A exclusão está disponível para personagens, cenários e objetos.');
+        if (item.ownerBookId) assertEditable((await findBook(connection, item.ownerBookId, true)).status);
+        // Scene saves acquire the same item lock before persisting references.
+        // A current locking read also sees a save committed while we waited.
+        const [pages] = await connection.execute("SELECT id FROM pages WHERE JSON_SEARCH(scene_json, 'one', ?) IS NOT NULL LIMIT 1 FOR UPDATE", [id]);
+        if (pages.length) throw new AppError(409, 'LIBRARY_IN_USE', 'Este elemento está em uso em uma página. Remova suas instâncias e salve as páginas antes de excluir o cadastro.');
+        const [ownedFiles] = await connection.execute('SELECT id, storage_key FROM assets WHERE owner_character_id = ? FOR UPDATE', [id]);
+        await connection.execute('DELETE FROM character_snapshots WHERE character_id = ?', [id]);
+        await connection.execute('DELETE FROM scene_item_snapshots WHERE library_item_id = ?', [id]);
+        await connection.execute('UPDATE library_items SET asset_id = NULL WHERE id = ?', [id]);
+        await connection.execute('DELETE FROM assets WHERE owner_character_id = ?', [id]);
+        await connection.execute('DELETE FROM library_items WHERE id = ?', [id]);
+        return ownedFiles;
+      });
+      // Only private images owned by this character are removed. Shared assets
+      // remain available; storage cleanup never precedes the database commit.
+      for (const file of files) {
+        try { await storage.delete(file.storage_key); }
+        catch { console.error('ASSET_DELETE_RECONCILIATION_REQUIRED', file.id); }
+      }
+      return { deleted: true };
+    },
     update(id, raw) {
       const input = updateLibrarySchema.parse(raw);
       return transaction(pool, async connection => {

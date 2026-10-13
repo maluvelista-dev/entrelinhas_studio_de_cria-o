@@ -1,8 +1,8 @@
 import { AppError } from '../../errors.js';
 const grants = Object.freeze({
-  ADMIN: ['books:read', 'books:write', 'books:submit', 'books:return', 'library:read', 'library:write', 'users:manage'],
+  ADMIN: ['books:read', 'books:write', 'books:submit', 'books:return', 'books:approve', 'library:read', 'library:write', 'users:manage'],
   EDITOR: ['books:read', 'books:write', 'books:submit', 'library:read', 'library:write'],
-  REVIEWER: ['books:read', 'books:return', 'library:read'],
+  REVIEWER: ['books:read', 'books:return', 'books:approve', 'library:read'],
 });
 export function permissionsFor(role) { return [...(grants[role] || [])]; }
 export function requirePermission(user, permission) {

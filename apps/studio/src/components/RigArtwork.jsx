@@ -1,3 +1,4 @@
+import { observePreviewSize } from './observe-preview-size.js';
 import { useEffect, useRef, useState } from 'react';
 import { AssetManager } from '@studio/engine';
 // The Engine renders artwork. SVG in RigCanvas is only the editable selection/marker overlay.
@@ -19,7 +20,7 @@ export function RigArtwork({ scene }) {
       renderer.current = instance;
       element.querySelector('canvas').setAttribute('aria-label', 'Montagem do personagem no Engine');
       const resize = () => { const bounds = element.getBoundingClientRect(); if (bounds.width > 0 && bounds.height > 0) instance.resize(Math.min(4096, Math.max(1, Math.round(bounds.width))), Math.min(4096, Math.max(1, Math.round(bounds.height)))); };
-      resize(); observer = new ResizeObserver(resize); observer.observe(element); setReady(true);
+      observer = observePreviewSize(element, resize); setReady(true);
     })().catch(() => { if (active) setError('Não foi possível carregar as imagens ou iniciar o Engine. Recarregue a estrutura e confira o suporte WebGL.'); });
     return () => { active = false; observer?.disconnect(); instance?.destroy(); renderer.current = null; void task.finally(() => manager?.dispose()).catch(() => {}); };
   }, []);

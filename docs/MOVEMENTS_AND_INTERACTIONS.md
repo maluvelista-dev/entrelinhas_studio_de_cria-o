@@ -1,3 +1,5 @@
+> Registro do primeiro incremento. Para o catálogo integral entregue em 08/10/2026, consulte [guia atual](ACTION_CATALOG_GUIDE.md) e [estado do projeto](PROJECT_STATUS.md).
+
 # Movimentos e interações — primeiro incremento
 
 Escopo autorizado em 04/10/2026. Implementados neste incremento: movement.moveTo, object.grab, object.carry, object.release e input.tap. A lista completa tem 128 entradas e permanece no [roteiro incremental](MOVEMENTS_AND_INTERACTIONS_PLAN.md). Não declarar as demais ações, o editor de variantes ou a timeline multipista como concluídos.

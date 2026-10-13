@@ -2,7 +2,7 @@ import { RigArtwork } from './RigArtwork.jsx';
 import { useRef, useState } from 'react';
 import { localToWorld, worldToLocal, resolveAnchor } from '@studio/engine';
 import { pivotAt } from './rig-model.js';
-export function RigCanvas({ character, partId, anchorName, mode, disabled, onSelect, onPart, onAnchor }) {
+export function RigCanvas({ character, partId, anchorName, mode, showJoints=true, disabled, onSelect, onPart, onAnchor }) {
   const svg = useRef(null), drag = useRef(null);
   const [zoom, setZoom] = useState(1);
   const { definition, perspective, nodes } = character;
@@ -66,9 +66,9 @@ export function RigCanvas({ character, partId, anchorName, mode, disabled, onSel
       <rect x="0" y="0" width={definition.width} height={definition.height} fill="transparent" stroke="#cbd5e1" />
       {draw(null)}
       {node && <rect data-testid="selected-part-outline" x="0" y="0" width={node.entity.width} height={node.entity.height} transform={'matrix(' + node.world.join(' ') + ')'} fill="none" stroke="#6366f1" vectorEffect="non-scaling-stroke" strokeDasharray="5 3" pointerEvents="none" />}
-      {pivot && <rect data-testid="rig-pivot" x={pivot.x - 6 / zoom} y={pivot.y - 6 / zoom} width={12 / zoom} height={12 / zoom} fill="#1d4ed8" pointerEvents="none" />}
-      {perspective.anchors.map(anchor => { const point = resolveAnchor(character, 'editor.' + anchor.name); return <g key={anchor.name} pointerEvents="none"><circle data-anchor={anchor.name} cx={point.x} cy={point.y} r={(anchor.name === anchorName ? 8 : 5) / zoom} fill="#b45309" /><text x={point.x + 12 / zoom} y={point.y} fontSize={14 / zoom} fill="#92400e">{anchor.name}</text></g>; })}
+      {showJoints && pivot && <rect data-testid="rig-pivot" x={pivot.x - 6 / zoom} y={pivot.y - 6 / zoom} width={12 / zoom} height={12 / zoom} fill="#1d4ed8" pointerEvents="none" />}
+      {showJoints && perspective.anchors.map(anchor => { const point = resolveAnchor(character, 'editor.' + anchor.name); return <g key={anchor.name} pointerEvents="none"><circle data-anchor={anchor.name} cx={point.x} cy={point.y} r={(anchor.name === anchorName ? 8 : 5) / zoom} fill="#b45309" /><text x={point.x + 12 / zoom} y={point.y} fontSize={14 / zoom} fill="#92400e">{anchor.name}</text></g>; })}
     </svg></div>
-    <p className="footnote">Quadrado azul: pivô da parte selecionada. Círculos âmbar: anchors. Use os campos numéricos para ajustes precisos.</p>
+    <p className="footnote" hidden={!showJoints}>Quadrado azul: pivô da parte selecionada. Círculos âmbar: anchors. Use os campos numéricos para ajustes precisos.</p>
   </div>;
 }

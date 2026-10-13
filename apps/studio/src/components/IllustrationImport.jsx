@@ -18,8 +18,8 @@ export function IllustrationImport({ books, busy, onImport, fixedKind }) {
     if (await onImport(data)) { setFile(null); setName(''); picker.current.value = ''; }
   }
   return <section className="panel illustration-import">
-    <div className="section-heading"><div><h2><Upload aria-hidden="true" size={22} /> Importar ilustração</h2>
-      <p className="muted">A imagem será adicionada à Biblioteca e poderá ser usada como capa.</p></div></div>
+    <div className="section-heading"><div><h2><Upload aria-hidden="true" size={22} /> {fixedKind==='CHARACTER'?'Cadastrar personagem com imagem inteira':'Importar ilustração'}</h2>
+      <p className="muted">{fixedKind==='CHARACTER'?'Envie o PNG ou WebP do personagem inteiro. A imagem ficará disponível na perspectiva Frente, sem exigir partes ou articulações.':'A imagem será adicionada à Biblioteca e poderá ser usada como capa.'}</p></div></div>
     <form onSubmit={submit}><fieldset disabled={busy} className="form-stack">
       <div className="upload-fields">
         <label>Arquivo da ilustração<input ref={picker} type="file" accept="image/png,image/webp,.png,.webp" required

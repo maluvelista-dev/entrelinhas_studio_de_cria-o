@@ -1,8 +1,8 @@
 import { gsap } from 'gsap';
 import { createInteractionRuntime } from './interaction.js';
-export function createScenePlayer(input,onFrame) {
+export function createScenePlayer(input,onFrame,onError=null) {
   const runtime=createInteractionRuntime(input), clock={ time:0 }; let closed=false;
-  const emit=() => onFrame(runtime.at(clock.time));
+  const emit=() => {try {onFrame(runtime.at(clock.time));}catch(error) {tween.pause();if(onError) onError(error);else throw error;}};
   const tween=gsap.to(clock,{ time:runtime.duration, duration:runtime.duration, ease:'none', paused:true, immediateRender:false, onUpdate:emit });
   const check=() => { if (closed) throw new Error('Player encerrado.'); };
   return { duration:runtime.duration,

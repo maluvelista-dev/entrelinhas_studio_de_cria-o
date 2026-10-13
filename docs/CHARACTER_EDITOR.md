@@ -2,7 +2,7 @@
 
 Ampliação da Fase 3 autorizada em 30/09/2026. Mantém Tema A e separação Studio/Engine. Não inclui poses, animações, timeline ou montagem de páginas.
 
-## Roteiro manual
+## Roteiro manual da entrega original (setembro)
 
 1. Prepare PNG/WebP das partes separadamente, preferencialmente com fundo transparente. O upload agora é direto na estrutura; não há recorte automático.
 2. Abra Biblioteca → Personagens → nome → Perspectivas e partes.
@@ -58,3 +58,7 @@ Rechecagem do fluxo de upload e troca de parte em 03/10/2026: cenário E2E espec
 ## Evolução em 03/10/2026
 
 As exclusões anteriores registram a entrega de setembro. Pacote portátil, poses/animações e inserção nas páginas agora estão implementados no escopo solicitado: ver [guia de uso e aceite](CHARACTER_PACKS_AND_MOTION.md). A edição de pivôs/anchors e upload direto continuam nesta mesma tela.
+
+## Fluxo guiado — 09/10/2026
+
+O roteiro atual está no [guia de autoria](ACTION_CATALOG_GUIDE.md#cadastro-com-uma-imagem-inteira). A tela agora separa **Perspectivas**, **Imagens e partes**, **Articulação** opcional e **Poses e ações**. Uma imagem inteira pode ser enviada diretamente pela raiz; **Adicionar parte para animar** fica recolhido. Os nomes das partes são amigáveis e seus identificadores são gerados automaticamente. O botão de upload agora se chama **Salvar imagem**. Pacotes `.character.json` têm entrada separada do PNG. Limites de upload permanecem inalterados.

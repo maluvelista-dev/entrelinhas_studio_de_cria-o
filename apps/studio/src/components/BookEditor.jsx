@@ -6,7 +6,7 @@ import { StatusBadge } from './ui/StatusBadge.jsx';
 import { useState } from "react";
 import { emptyPage, statusLabels } from "@studio/schemas";
 import { BookForm } from "./BookForm.jsx";
-function PageForm({ page, book, editable, busy, onSave, onDirty }) {
+function PageForm({ page, book, mode, editable, busy, onSave, onDirty }) {
   const [text, setText] = useState(page.content.text);
   const [scene, setScene] = useState(editablePage(page).scene);
   return (
@@ -21,7 +21,7 @@ function PageForm({ page, book, editable, busy, onSave, onDirty }) {
         <h3>Página {page.position}</h3>
         <span>{text.length.toLocaleString("pt-BR")} / 30.000 caracteres</span>
       </div>
-      <label>
+      <label hidden={mode === "art"}>
         Texto da página
         <textarea
           disabled={busy || !editable}
@@ -36,7 +36,7 @@ function PageForm({ page, book, editable, busy, onSave, onDirty }) {
           }}
         />
       </label>
-      <PageScene book={book} document={{ ...editablePage(page), scene, content: { text, narration: null } }} editable={editable} busy={busy} onChange={scene => { setScene(scene); onDirty(true); }} />
+      {mode === "art" && <PageScene book={book} document={{ ...editablePage(page), scene, content: { text, narration: null } }} editable={editable} busy={busy} onChange={scene => { setScene(scene); onDirty(true); }} />}
       <div className="form-actions">
         <Button className="button" disabled={busy || !editable}>
           {busy ? "Salvando…" : "Salvar página"}
@@ -54,6 +54,9 @@ export function BookEditor({
   onDirty,
   onUpdate,
   onPage,
+  onDeletePage,
+  onDuplicatePage,
+  onDeleteBook,
   onReorder,
   onTransition,
 }) {
@@ -94,6 +97,7 @@ export function BookEditor({
         {[
           ["details", "Sobre o livro"],
           ["pages", "Páginas"],
+          ["art", "Arte das páginas"],
           ["review", "Revisão"],
         ].map(([id, label]) => (
           <button
@@ -101,7 +105,7 @@ export function BookEditor({
             role="tab"
             disabled={busy}
             aria-selected={tab === id}
-            onClick={() => change(() => setTab(id))}
+            onClick={() => { if (["pages", "art"].includes(tab) && ["pages", "art"].includes(id)) setTab(id); else change(() => setTab(id)); }}
           >
             {label}
           </button>
@@ -111,7 +115,7 @@ export function BookEditor({
         <div className="editor-body">
           {book.status !== "DRAFT" && (
             <p className="notice">
-              Este livro está em revisão. Devolva-o a rascunho para editar.
+              Este livro está em {statusLabels[book.status].toLocaleLowerCase('pt-BR')}. Devolva-o a rascunho para editar.
             </p>
           )}
           <fieldset disabled={busy || !canEdit || book.status !== "DRAFT"}>
@@ -124,9 +128,10 @@ export function BookEditor({
               onDirty={onDirty}
             />
           </fieldset>
+          {canEdit && book.status === 'DRAFT' && <Button type="button" variant="secondary" disabled={busy} onClick={() => { if (window.confirm('Excluir este livro e todas as suas páginas? Esta ação não pode ser desfeita. Livros com arquivos ou elementos exclusivos têm a exclusão bloqueada.')) change(onDeleteBook); }}>Excluir livro</Button>}
         </div>
       )}
-      {tab === "pages" && (
+      {["pages", "art"].includes(tab) && (
         <div className="pages-layout">
           <aside className="page-list">
             <div className="section-heading">
@@ -188,9 +193,14 @@ export function BookEditor({
           <div className="page-content">
             {page ? (
               <div>
+                {canEdit && <div className="form-actions">
+                  <Button type="button" variant="secondary" disabled={busy || book.status !== 'DRAFT'} onClick={() => change(() => onDuplicatePage(page.id))}>Duplicar página</Button>
+                  <Button type="button" variant="secondary" disabled={busy || book.status !== 'DRAFT'} onClick={() => { if (window.confirm('Excluir a página ' + page.position + '? Esta ação não pode ser desfeita.')) change(() => onDeletePage(page.id)); }}>Excluir página</Button>
+                </div>}
                 <PageForm
                   key={page.id + ":" + book.revision}
                   page={page}
+                  mode={tab}
                   book={book} editable={canEdit && book.status === "DRAFT"}
                   busy={busy}
                   onDirty={onDirty}
@@ -201,7 +211,7 @@ export function BookEditor({
               <div className="empty small">
                 <span className="empty-mark">01</span>
                 <h3>A primeira página espera por você</h3>
-                <p>Adicione uma página e comece a escrever.</p>
+                <p>Adicione uma página para escrever e montar sua arte.</p>
               </div>
             )}
           </div>
@@ -222,6 +232,8 @@ export function BookEditor({
             <span className={book.status === "REVIEW" ? "current" : ""}>
               Em revisão
             </span>
+            <span>→</span>
+            <span className={book.status === 'READY_TO_PUBLISH' ? 'current' : ''}>Pronto para publicar</span>
           </div>
           <label>
             Comentário opcional
@@ -237,7 +249,7 @@ export function BookEditor({
             disabled={
               busy ||
               !canTransition ||
-              !["DRAFT", "REVIEW"].includes(book.status)
+              !["DRAFT", "REVIEW", "READY_TO_PUBLISH"].includes(book.status)
             }
             onClick={() => {
               change(() =>
@@ -248,10 +260,11 @@ export function BookEditor({
               );
             }}
           >
-            {book.status === "REVIEW"
+            {book.status !== "DRAFT"
               ? "Devolver a rascunho"
               : "Enviar para revisão"}
           </Button>
+          {book.status === 'REVIEW' && permissions.includes('books:approve') && <Button type="button" disabled={busy} onClick={() => change(() => onTransition('READY_TO_PUBLISH', comment))}>Aprovar para publicação</Button>}
           <p className="notice">
             A publicação estará disponível após a implementação das validações
             editoriais.

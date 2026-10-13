@@ -13,6 +13,7 @@ export function BookForm({
   const [title, setTitle] = useState(book?.title || "");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState(book?.description || "");
+  const [editorialCategory, setEditorialCategory] = useState(book?.editorialCategory || "");
   const [min, setMin] = useState(book?.ageRange?.min ?? "");
   const [max, setMax] = useState(book?.ageRange?.max ?? "");
   const [cover, setCover] = useState(book?.cover || "");
@@ -33,6 +34,7 @@ export function BookForm({
       title,
       ...(!book ? { slug } : {}),
       description,
+      editorialCategory,
       ageRange: min === "" ? null : { min: Number(min), max: Number(max) },
       cover: cover || null,
     });
@@ -82,6 +84,7 @@ export function BookForm({
           placeholder="Sobre o que é esta história?"
         />
       </label>
+      <label>Categoria editorial<input maxLength={100} value={editorialCategory} onChange={event => setEditorialCategory(event.target.value)} placeholder="Ex.: Aventura, contos ou aprendizagem" /></label>
       <div className="field-row">
         <label>
           Idade mínima

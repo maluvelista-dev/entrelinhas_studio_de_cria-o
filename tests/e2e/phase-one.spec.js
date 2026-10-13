@@ -1,0 +1,75 @@
+import {test,expect} from '@playwright/test';
+
+test('fechamento editorial: categoria, duplicação, exclusão e aprovação persistentes',async({page})=>{
+  const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  const stamp=Date.now(), title='Fechamento '+stamp;
+  await page.goto('/');
+  await page.getByLabel('Usuário',{exact:true}).fill(process.env.E2E_USERNAME);
+  await page.getByLabel('Senha',{exact:true}).fill(process.env.E2E_PASSWORD);
+  await page.getByRole('button',{name:'Entrar',exact:true}).click();
+  await page.getByRole('button',{name:/Novo livro/}).click();
+  await page.getByLabel('Título do livro').fill(title);
+  await page.getByLabel('Identificador (slug)').fill('fechamento-'+stamp);
+  await page.getByLabel('Categoria editorial').fill('Aventura');
+  await page.getByRole('button',{name:'Criar livro',exact:true}).click();
+  await expect(page.getByRole('heading',{name:title,exact:true})).toBeVisible();
+  await page.getByRole('tab',{name:'Páginas',exact:true}).click();
+  await page.getByRole('button',{name:'Adicionar página'}).click();
+  await page.getByLabel('Texto da página').fill('Original preservado');
+  await page.getByRole('button',{name:'Salvar página'}).click();
+  await expect(page.getByText('Alterações não salvas')).toHaveCount(0);
+  await page.getByRole('button',{name:'Duplicar página',exact:true}).click();
+  await page.getByRole('button',{name:/02 Original preservado/}).click();
+  await page.getByLabel('Texto da página').fill('Cópia independente');
+  await page.getByRole('button',{name:'Salvar página'}).click();
+  await expect(page.getByText('Alterações não salvas')).toHaveCount(0);
+  page.once('dialog',dialog=>dialog.dismiss());
+  await page.getByRole('button',{name:'Excluir página',exact:true}).click();
+  await expect(page.getByLabel('Texto da página')).toHaveValue('Cópia independente');
+  page.once('dialog',dialog=>dialog.accept());
+  await page.getByRole('button',{name:'Excluir página',exact:true}).click();
+  await expect(page.getByLabel('Texto da página')).toHaveValue('Original preservado');
+  await page.getByRole('tab',{name:'Revisão',exact:true}).click();
+  await page.getByRole('button',{name:'Enviar para revisão'}).click();
+  await page.getByRole('button',{name:'Aprovar para publicação'}).click();
+  await expect(page.getByText('Em revisão → Pronto para publicar',{exact:true})).toBeVisible();
+  await page.screenshot({path:'.local/qa-phase1-approval.png',fullPage:true});
+  await page.reload();
+  await page.getByRole('button',{name:new RegExp(title)}).click();
+  await expect(page.getByLabel('Categoria editorial')).toHaveValue('Aventura');
+  await expect(page.getByLabel('Categoria editorial')).toBeDisabled();
+  await page.getByRole('tab',{name:'Revisão',exact:true}).click();
+  await page.getByRole('button',{name:'Devolver a rascunho'}).click();
+  await expect(page.getByText('Pronto para publicar → Rascunho',{exact:true})).toBeVisible();
+  await page.getByRole('tab',{name:'Sobre o livro'}).click();
+  page.once('dialog',dialog=>dialog.accept());
+  await page.getByRole('button',{name:'Excluir livro',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Sua estante',exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:new RegExp(title)})).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test('exclui personagens, cenários e objetos somente na Biblioteca com confirmação',async({page})=>{
+  await page.goto('/');
+  await page.getByLabel('Usuário',{exact:true}).fill(process.env.E2E_USERNAME);
+  await page.getByLabel('Senha',{exact:true}).fill(process.env.E2E_PASSWORD);
+  await page.getByRole('button',{name:'Entrar',exact:true}).click();
+  await page.getByRole('button',{name:/Biblioteca/}).click();
+  for(const category of ['Personagens','Cenários','Objetos']) {
+    const name=category+' removível '+Date.now();
+    await page.getByRole('tab',{name:new RegExp(category)}).click();
+    await page.getByLabel('Nome do elemento').fill(name);
+    await page.getByRole('button',{name:category==='Personagens'?'Criar personagem e adicionar imagens':'Cadastrar elemento'}).click();
+    if(category==='Personagens') await page.getByRole('button',{name:'Voltar à ficha'}).click();
+    else await page.getByRole('button',{name:'Abrir '+name,exact:true}).click();
+    page.once('dialog',dialog=>dialog.dismiss());
+    await page.getByRole('button',{name:'Excluir da Biblioteca'}).click();
+    await expect(page.getByRole('heading',{name,exact:true})).toBeVisible();
+    page.once('dialog',dialog=>dialog.accept());
+    await page.getByRole('button',{name:'Excluir da Biblioteca'}).click();
+    await expect(page.getByRole('heading',{name:category,exact:true})).toBeVisible();
+    await expect(page.getByRole('button',{name:'Abrir '+name,exact:true})).toHaveCount(0);
+  }
+  await page.reload();await page.getByRole('button',{name:/Biblioteca/}).click();
+  await expect(page.getByRole('button',{name:/Abrir .* removível/})).toHaveCount(0);
+});

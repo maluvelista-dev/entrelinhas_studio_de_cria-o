@@ -1,3 +1,4 @@
+import { observePreviewSize } from './observe-preview-size.js';
 import { CharacterPreview } from './CharacterPreview.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { validationScene as scene } from '@studio/engine/example';
@@ -19,7 +20,7 @@ function GeometryPreview() {
         const width = Math.min(1000, Math.floor(element.clientWidth));
         if (width > 0) instance.resize(width, Math.round(width*0.75));
       };
-      resize(); observer = new ResizeObserver(resize); observer.observe(element);
+      observer = observePreviewSize(element, resize);
       setReady(true);
     }).catch(() => { if (active) setError('Não foi possível iniciar a visualização gráfica. Verifique o suporte WebGL do navegador.'); });
     return () => { active = false; observer?.disconnect(); renderer?.destroy(); };

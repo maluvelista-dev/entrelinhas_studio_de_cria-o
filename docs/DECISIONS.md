@@ -18,7 +18,9 @@ Problema: editar livro publicado não pode alterar conteúdo público. Opções:
 
 Problema: cenas evoluem, enquanto relações precisam de integridade. Opções: tudo JSON, tudo tabelas ou híbrido. Recomendação: relações/identidades/ordem em tabelas; cenas/timeline/definições em JSON validado. Sem ORM inicialmente; SQL parametrizado em repositórios. A validação semântica continua obrigatória fora do banco.
 
-## ADR-005 — Escopo e gates da Fase 0
+## ADR-005 — Escopo e gates da Fase 0 (histórico, substituído no fechamento de 11/10)
+
+O checklist integral vigente inclui setup e validações executáveis. Consulte PHASE_0.md; a decisão documental abaixo é preservada apenas como histórico.
 
 Problema: regras gerais pedem test/lint/build em toda fase, mas a seção 38 pede primeiro propostas e documentação. Decisão de escopo: entrega apenas documental, sem instalar stack antecipadamente. Registrar gates de aplicação como não executáveis, nunca aprovados. Aceite documental depende do usuário; setup executável entra na Fase 1 e terá todos os gates. Nenhuma funcionalidade de Fase 1 foi iniciada.
 
